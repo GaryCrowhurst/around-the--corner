@@ -1,0 +1,1180 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Around the Corner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Limelight&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a projection-booth viewer. The 3D model fills the stage on the left; a reel of film steps and controls runs down the right. */
+:root{
+  --bg:#0e1316; --panel:#151c20; --panel2:#1c262c; --line:#2a373e;
+  --fg:#ece6d6; --muted:#97a3a6; --brass:#d9a441;
+  --left:#5cc8d6; --right:#f08a6c; --ok:#7bd389; --warn:#f2c14e; --bad:#ff6b5e;
+  --display:"Limelight","Didot","Bodoni 72",Georgia,serif;
+  --body:"Work Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;line-height:1.5}
+*{box-sizing:border-box}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+.app{height:100%;display:flex;flex-direction:column;gap:12px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(24px,3.2vw,34px);letter-spacing:.04em;margin:0;color:var(--brass);line-height:1.1}
+header p{margin:0;color:var(--muted);font-size:13px}
+.film-link{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:7px 14px 7px 10px;border:1px solid var(--brass);border-radius:999px;color:var(--brass);text-decoration:none;font-weight:500;font-size:13px;white-space:nowrap}
+.film-link:hover{background:color-mix(in srgb,var(--brass) 14%,transparent)}
+.film-link svg,.step-link svg{width:16px;height:16px;fill:currentColor;flex:0 0 auto}
+.step-link{display:inline-flex;align-items:center;gap:6px;color:var(--brass);font-size:13px;font-weight:500;text-decoration:none;align-self:flex-start}
+.step-link:hover{text-decoration:underline}
+
+.reel{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+.reel button{flex:0 0 auto;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 6px;cursor:pointer;white-space:nowrap;font-size:13px}
+.reel button .n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--panel2);font-family:var(--mono);font-size:12px;color:var(--muted)}
+.reel button:hover{border-color:var(--muted)}
+.reel button[aria-current="step"]{border-color:var(--brass);background:var(--panel2)}
+.reel button[aria-current="step"] .n{background:var(--brass);color:var(--bg)}
+
+.main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 352px;gap:12px}
+.stage{position:relative;min-height:0;border-radius:12px;overflow:hidden;border:1px solid var(--line);
+  background:radial-gradient(ellipse at 50% 30%,var(--panel2),var(--bg) 75%)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.stage::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 120px rgba(0,0,0,.55)}
+.hint{position:absolute;top:10px;right:12px;font-size:11.5px;color:var(--muted);background:color-mix(in srgb,var(--bg) 70%,transparent);padding:4px 10px;border-radius:999px;z-index:2}
+.status{position:absolute;left:12px;right:12px;bottom:12px;z-index:2;display:flex;gap:10px;align-items:flex-start;
+  background:color-mix(in srgb,var(--bg) 82%,transparent);border:1px solid var(--line);border-radius:10px;padding:10px 12px;max-width:560px;backdrop-filter:blur(6px)}
+.status .dot{flex:0 0 10px;height:10px;border-radius:50%;margin-top:5px;background:var(--ok)}
+.status[data-tone="warn"] .dot{background:var(--warn)}
+.status[data-tone="bad"] .dot{background:var(--bad)}
+.labels{position:absolute;inset:0;pointer-events:none;z-index:1}
+.views{position:absolute;top:10px;left:12px;z-index:3;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 24px)}
+.views button{background:color-mix(in srgb,var(--bg) 78%,transparent);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12px;cursor:pointer;backdrop-filter:blur(6px)}
+.views button:hover{border-color:var(--muted)}
+.views button[aria-pressed="true"]{border-color:var(--brass);color:var(--brass)}
+.hint{top:auto!important;bottom:82px}
+.grain{position:absolute;inset:0;pointer-events:none;z-index:1;opacity:0;mix-blend-mode:overlay;background-size:160px}
+.stage.film canvas{filter:grayscale(1) contrast(1.22) brightness(1.06)}
+.stage.film .grain{opacity:.16;animation:jitter .18s steps(2) infinite}
+.stage.film .tag i{filter:grayscale(1)}
+@keyframes jitter{0%{background-position:0 0}50%{background-position:-37px 23px}100%{background-position:19px -41px}}
+@media (prefers-reduced-motion:reduce){.stage.film .grain{animation:none}}
+.tag{position:absolute;transform:translate(-50%,-100%);font-size:11.5px;font-weight:500;white-space:nowrap;
+  background:color-mix(in srgb,var(--bg) 78%,transparent);border:1px solid var(--line);border-radius:6px;padding:2px 8px;color:var(--fg)}
+.tag i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:0}
+
+.panel{min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:2px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
+h2{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.03em;margin:0;text-wrap:balance;line-height:1.15}
+.card p{margin:0;color:color-mix(in srgb,var(--fg) 88%,var(--muted))}
+.nav{display:flex;gap:8px}
+.btn{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;font-weight:500}
+.btn:hover:not(:disabled){border-color:var(--muted)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{background:var(--brass);color:var(--bg);border-color:var(--brass)}
+
+.field{display:flex;flex-direction:column;gap:6px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.row label,.lbl{font-weight:500}
+.val{font-family:var(--mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--brass)}
+.scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+.holds{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hold{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px;cursor:pointer;font-weight:500}
+.hold i{width:10px;height:10px;border-radius:50%}
+.hold[aria-pressed="true"]{border-color:var(--fg);background:color-mix(in srgb,var(--fg) 14%,var(--panel2))}
+
+.spokes{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px}
+.spokes button{height:44px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);font-size:22px;cursor:pointer;line-height:1}
+.spokes button:hover:not(:disabled){border-color:var(--brass);color:var(--brass)}
+.spokes button:disabled{opacity:.35;cursor:default}
+.big{text-align:center;font-family:var(--mono);font-size:34px;font-weight:500;color:var(--brass);font-variant-numeric:tabular-nums;line-height:1}
+.big small{display:block;font-family:var(--body);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:var(--panel2);border:0;border-right:1px solid var(--line);padding:7px;cursor:pointer;font-family:var(--mono)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--brass);color:var(--bg)}
+.seg button:disabled{opacity:.4;cursor:default}
+.checks{display:flex;flex-direction:column;gap:8px}
+.check{display:flex;gap:10px;align-items:center;cursor:pointer}
+.check input{width:16px;height:16px;accent-color:var(--brass);margin:0}
+.check.off{opacity:.45;cursor:default}
+.meter{height:8px;border-radius:999px;background:var(--panel2);overflow:hidden}
+.meter span{display:block;height:100%;background:linear-gradient(90deg,var(--bad),var(--warn),var(--ok));transition:width .3s}
+
+.read{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.read div{background:var(--panel2);border-radius:8px;padding:8px;text-align:center}
+.read b{display:block;font-family:var(--mono);font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}
+.read span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.law{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+#trace{width:100%;height:96px;display:block;border-radius:8px;background:var(--panel2)}
+.legend{display:flex;gap:14px;font-size:11.5px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:13px}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;text-align:right;min-width:0;overflow-wrap:anywhere}
+#close{width:100%;height:170px;display:block;border-radius:8px;background:var(--panel2)}
+.cap{font-size:12px;color:var(--muted)!important}
+@media (max-width:880px){
+  .app{height:auto;min-height:100%}
+  .main{grid-template-columns:1fr}
+  .stage{height:58vh;min-height:340px}
+  .panel{overflow:visible}
+}
+@media (max-width:600px){
+  .app{gap:10px;padding-block:10px}
+  header{gap:6px 10px}
+  header p{flex-basis:100%;order:3}
+  h1{font-size:24px}
+  .film-link{padding:6px 12px 6px 8px;font-size:12.5px}
+  .stage{height:56vh;min-height:320px;max-height:560px;border-radius:10px}
+  .hint{display:none}
+  .views{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;max-width:calc(100% - 16px);left:8px;top:8px;gap:4px}
+  .views::-webkit-scrollbar{display:none}
+  .views button{flex:0 0 auto;font-size:11.5px;padding:5px 10px}
+  .status{left:8px;right:8px;bottom:8px;padding:8px 10px;font-size:12.5px;line-height:1.4;gap:8px}
+  .tag{font-size:10.5px;padding:1px 6px}
+  .card{padding:12px;gap:10px}
+  h2{font-size:20px}
+  .read b{font-size:18px}
+  .facts{grid-template-columns:1fr;gap:2px}
+  .facts dd{text-align:left;margin-bottom:6px}
+  .hold,.btn,.seg button{min-height:44px}
+  .check{min-height:32px}
+  input[type=range]{height:28px}
+  #close{height:150px}
+}
+@media (prefers-reduced-motion:reduce){.meter span{transition:none}}
+</style>
+
+<div class="app">
+  <header>
+    <h1>Around the Corner</h1>
+    <p>Build a differential step by step, after the 1937 Chevrolet film.</p>
+    <a class="film-link" href="https://youtu.be/yYAw79386WI" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Watch the 1937 film</a>
+  </header>
+  <nav class="reel" id="reel" aria-label="Steps"></nav>
+
+  <div class="main">
+    <div class="stage" id="stage">
+      <div class="views" role="group" aria-label="Camera">
+        <button data-view="film" aria-pressed="false">Film angle</button>
+        <button data-view="three" aria-pressed="true">3/4 view</button>
+        <button data-view="close" aria-pressed="false">Close up</button>
+        <button id="filmLook" aria-pressed="false">1937 film look</button>
+      </div>
+      <div class="grain" id="grain"></div>
+      <div class="hint">Drag to orbit · tap a wheel to hold it</div>
+      <div class="labels" id="labels"></div>
+      <div class="status" id="status" data-tone="ok" role="status"><span class="dot"></span><span id="statusText"></span></div>
+    </div>
+
+    <aside class="panel">
+      <section class="card">
+        <p class="eyebrow" id="stepNo">Step 1 of 6</p>
+        <h2 id="stepTitle"></h2>
+        <p id="stepText"></p>
+        <a class="step-link" href="https://youtu.be/yYAw79386WI" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>See this in the original film</a>
+        <div class="nav">
+          <button class="btn" id="prev">Previous</button>
+          <button class="btn primary" id="next">Next step</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <p class="eyebrow">Drive</p>
+        <div class="field">
+          <div class="row"><label for="drive" id="driveLbl">Support speed</label><span class="val" id="driveVal"></span></div>
+          <input type="range" id="drive" min="0" max="60" step="1">
+        </div>
+        <div class="field">
+          <div class="row"><label for="steer">Steering</label><span class="val" id="steerVal"></span></div>
+          <input type="range" id="steer" min="-1" max="1" step="0.05">
+          <div class="scale"><span>Left turn</span><span>Straight</span><span>Right turn</span></div>
+        </div>
+        <div class="holds">
+          <button class="hold" id="holdL" aria-pressed="false"><i style="background:var(--left)"></i>Hold left wheel</button>
+          <button class="hold" id="holdR" aria-pressed="false"><i style="background:var(--right)"></i>Hold right wheel</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <p class="eyebrow">Spokes</p>
+        <div class="spokes">
+          <button id="minus" aria-label="Remove a spoke">−</button>
+          <div class="big"><span id="nVal">1</span><small id="nLbl">spokes per axle</small></div>
+          <button id="plus" aria-label="Add a spoke">+</button>
+        </div>
+        <input type="range" id="nSlider" min="1" max="36" step="1" aria-label="Spokes per axle">
+        <div class="field">
+          <div class="row"><span class="lbl" id="barsLbl">Crossbars on the pivot</span><span class="val" id="pinVal"></span></div>
+          <div class="seg" id="bars">
+            <button data-b="1">1</button><button data-b="2">2</button><button data-b="3">3</button>
+          </div>
+        </div>
+        <div class="checks">
+          <label class="check" id="gearWrap"><input type="checkbox" id="gear">Shape the spokes into gear teeth</label>
+          <label class="check" id="pin2Wrap"><input type="checkbox" id="pin2">Add a second pinion to share the work</label>
+          <label class="check" id="ringWrap"><input type="checkbox" id="ring">Ring gear and driveshaft</label>
+          <label class="check" id="lowWrap"><input type="checkbox" id="low">Low centre drive</label>
+        </div>
+        <div class="field">
+          <div class="row"><span class="lbl">Smoothness of the push</span><span class="val" id="smoothVal"></span></div>
+          <div class="meter"><span id="smoothBar"></span></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <p class="eyebrow">Physics check</p>
+        <dl class="facts">
+          <dt>Contacts now</dt><dd id="fContacts">—</dd>
+          <dt>Deepest overlap</dt><dd id="fOverlap">—</dd>
+          <dt>Collision sweep</dt><dd id="fSweep">—</dd>
+          <dt id="fRatioL">Contact ratio</dt><dd id="fRatio">—</dd>
+          <dt>Ring and pinion</dt><dd id="fRing">—</dd>
+        </dl>
+        <canvas id="close" aria-label="Close-up of the parts in contact"></canvas>
+        <p class="cap" id="closeCap"></p>
+        <label class="check"><input type="checkbox" id="marksOn" checked>Show contact points in 3D</label>
+      </section>
+
+      <section class="card">
+        <p class="eyebrow">Wheel speeds</p>
+        <div class="read">
+          <div><b id="rL" style="color:var(--left)">0</b><span>Left rpm</span></div>
+          <div><b id="rC" style="color:var(--brass)">0</b><span>Support</span></div>
+          <div><b id="rR" style="color:var(--right)">0</b><span>Right rpm</span></div>
+        </div>
+        <div class="law" id="law"></div>
+        <canvas id="trace" aria-label="Wheel speed trace"></canvas>
+        <div class="legend"><span><i style="background:var(--left)"></i>Left wheel</span><span><i style="background:var(--right)"></i>Right wheel</span><span><i style="background:var(--brass)"></i>Support</span></div>
+        <label class="check"><input type="checkbox" id="labelsOn" checked>Show part labels</label>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+/* ===== Differential physics core: no DOM, no three.js ===== */
+var DIFF = (function(){
+const TAU = Math.PI*2, PI = Math.PI;
+/* Spoke model (1 unit = 50 mm): radial spokes in the planes x = ±XS, crossbars at height YB */
+const SP_A = 1.4, SP_IN = 0.16, ARM_IN = 0.12, R0 = 0.72;
+/* Bevel gears */
+const A_CONE = 1.25, FACE_K = 0.70;
+/* Ring and drive pinion */
+const RING_T = 37, DRV_T = 9, XP = 1.56, RHO1 = 1.47, RHO2 = 1.69, E_LOW = 0.42;
+const UNIT_MM = 50;
+/* Solver */
+const LAG = 0.003, IT = 14;
+
+const clamp01 = v => v<0?0:v>1?1:v;
+const wrap = a => { a = (a+PI) % TAU; if(a<0) a += TAU; return a-PI; };
+
+const S = {step:0, mode:"free", N:1, bars:1, gear:false, pin2:false, ring:false, low:true,
+           drive:24, steer:-0.5, holdL:false, holdR:false};
+const K = {c:0, tL:0, tR:0, psi:[0,0], u:0, pL:0, pR:0, pC:0, wL:0, wR:0, wC:0,
+           pen:0, cL:0, cR:0, contacts:[], dContacts:[], stallFrac:1, slip:0,
+           noL:0, noR:0, rel:[], smooth:null, msg:"", tone:"ok"};
+let GM = null, DM = null;
+
+/* Spokes and bars sit on pitch cones, like bevel gears: height YB of the bars and the
+   spoke plane XS are chosen so N spokes roll against 2*bars arms (YB/XS = N / 2bars). */
+let SG=null, SGkey="";
+function spokeGeo(){
+  const key=S.N+"/"+S.bars; if(key===SGkey) return SG;
+  // match the pitch at the hand-off between arms, where tan() makes a straight bar run fastest
+  const ratio = (S.bars>=2 && S.N>=3) ? Math.max(0.75, Math.tan(PI/(2*S.bars))/Math.tan(PI/S.N)) : Math.max(1, S.N/(2*S.bars));
+  const g=Math.atan(Math.min(ratio,8)), YB=SP_A*Math.sin(g), XS=SP_A*Math.cos(g);
+  const r=Math.min(0.07, 0.22*PI*YB/S.N, 0.22*PI*XS/(2*S.bars));
+  const h=Math.min(PI/(2*S.bars),1.25);
+  const ARM = S.bars===1 ? XS+0.25 : Math.min(1.6, (XS+r)/Math.cos(h)+0.01);   // a single bar just spans the spokes, as in the film
+  const RSP=Math.min(1.5, YB/Math.cos(Math.min(PI/S.N,1.0))+2.2*r+0.06);
+  SG={YB,XS,r,ARM,RSP,g}; SGkey=key; return SG;
+}
+function pegR(){ return spokeGeo().r; }
+function pegOff(){ const G=spokeGeo(); return Math.atan((2*G.r+0.015)/G.YB); }
+
+/* ---------- 3D closest points between two segments ---------- */
+function segSeg(p1,q1,p2,q2){
+  const d1x=q1[0]-p1[0], d1y=q1[1]-p1[1], d1z=q1[2]-p1[2];
+  const d2x=q2[0]-p2[0], d2y=q2[1]-p2[1], d2z=q2[2]-p2[2];
+  const rx=p1[0]-p2[0], ry=p1[1]-p2[1], rz=p1[2]-p2[2];
+  const a=d1x*d1x+d1y*d1y+d1z*d1z, e=d2x*d2x+d2y*d2y+d2z*d2z, f=d2x*rx+d2y*ry+d2z*rz;
+  const c=d1x*rx+d1y*ry+d1z*rz, b=d1x*d2x+d1y*d2y+d1z*d2z, den=a*e-b*b;
+  let s = den>1e-12 ? clamp01((b*f-c*e)/den) : 0;
+  let t = (b*s+f)/e;
+  if(t<0){ t=0; s=clamp01(-c/a); } else if(t>1){ t=1; s=clamp01((b-c)/a); }
+  const c1=[p1[0]+d1x*s, p1[1]+d1y*s, p1[2]+d1z*s], c2=[p2[0]+d2x*t, p2[1]+d2y*t, p2[2]+d2z*t];
+  const dx=c1[0]-c2[0], dy=c1[1]-c2[1], dz=c1[2]-c2[2];
+  return {d:Math.sqrt(dx*dx+dy*dy+dz*dz), c1, c2};
+}
+
+/* ---------- 2D polygon tools ---------- */
+function orient(a,b,c){ return (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]); }
+function segX(a,b,c,d){ const o1=orient(a,b,c), o2=orient(a,b,d), o3=orient(c,d,a), o4=orient(c,d,b); return o1*o2<0 && o3*o4<0; }
+function inPoly(p,P){ let ins=false; for(let i=0,j=P.length-1;i<P.length;j=i++){ const a=P[i], b=P[j]; if((a[1]>p[1])!==(b[1]>p[1]) && p[0] < (b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0]) ins=!ins; } return ins; }
+function bbox(P){ let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; for(const p of P){ if(p[0]<x0)x0=p[0]; if(p[0]>x1)x1=p[0]; if(p[1]<y0)y0=p[1]; if(p[1]>y1)y1=p[1]; } return [x0,y0,x1,y1]; }
+function overlap(A,B){
+  const a=bbox(A), b=bbox(B);
+  if(a[2]<b[0]||b[2]<a[0]||a[3]<b[1]||b[3]<a[1]) return false;
+  for(let i=0;i<A.length;i++){ const p=A[i], q=A[(i+1)%A.length];
+    for(let j=0;j<B.length;j++){ if(segX(p,q,B[j],B[(j+1)%B.length])) return true; } }
+  return inPoly(A[0],B) || inPoly(B[0],A);
+}
+function ptSeg(p,a,b){
+  const vx=b[0]-a[0], vy=b[1]-a[1], L=vx*vx+vy*vy;
+  const t = L>0 ? clamp01(((p[0]-a[0])*vx+(p[1]-a[1])*vy)/L) : 0;
+  const cx=a[0]+vx*t, cy=a[1]+vy*t;
+  return [Math.hypot(p[0]-cx,p[1]-cy), cx, cy];
+}
+function polyGap(A,B){
+  let best={d:1e9,p:null};
+  const run=(P,Q)=>{ for(const p of P){ for(let j=0;j<Q.length;j++){ const r=ptSeg(p,Q[j],Q[(j+1)%Q.length]); if(r[0]<best.d) best={d:r[0],p:[(p[0]+r[1])/2,(p[1]+r[2])/2]}; } } };
+  run(A,B); run(B,A); return best;
+}
+
+/* ---------- involute tooth (polar half-profile) ---------- */
+function involute(z,m,al,ha,hf,bl,xs){
+  xs=xs||0;
+  const r=z*m/2, rb=r*Math.cos(al), ra=r+(ha+xs)*m, rf=Math.max(r-(hf-xs)*m, r*0.35);
+  const inv=a=>Math.tan(a)-a;
+  const half0=(PI*m/2+2*xs*m*Math.tan(al)-bl)/(2*r)+inv(al);
+  const n=10, flank=[];
+  for(let i=0;i<=n;i++){
+    const rho=rf+(ra-rf)*i/n;
+    let h = rho<=rb ? half0 : half0-inv(Math.acos(rb/rho));
+    if(h<0.002) h=0.002;
+    flank.push([rho,h]);
+  }
+  return {z,m,r,rb,ra,rf,flank};
+}
+function toothPoly(T,ang,cx,cy){
+  const pts=[], fl=T.flank;
+  for(let i=0;i<fl.length;i++){ const a=ang-fl[i][1]; pts.push([cx+fl[i][0]*Math.cos(a), cy+fl[i][0]*Math.sin(a)]); }
+  for(let i=fl.length-1;i>=0;i--){ const a=ang+fl[i][1]; pts.push([cx+fl[i][0]*Math.cos(a), cy+fl[i][0]*Math.sin(a)]); }
+  return pts;
+}
+
+/* ---------- bevel side gears and pinions (Tredgold back-cone) ---------- */
+function pinionCount(N){ return Math.max(5, Math.round(N*0.625)); }
+function meshBases(G,s,i,r){
+  const psi = r*G.N/G.Np + (i ? PI*G.N/G.Np : 0);
+  let w = (s<0 ? r : -r) + (s<0 ? G.offL : G.offR) - G.shift;
+  if(i) w += PI;
+  return s<0 ? {side:-w, pin:psi+PI} : {side:w, pin:psi};
+}
+function meshPolys(G,b){
+  const Sp=[], Pp=[], cs=Math.cos(G.gs), cp=Math.cos(G.gp), a=G.Ts.r+G.Tp.r;
+  for(let j=0;j<G.N;j++){ const ph=wrap(b.side+TAU*j/G.N)*cs; if(Math.abs(ph)<0.9) Sp.push(toothPoly(G.Ts,ph,0,0)); }
+  for(let k=0;k<G.Np;k++){ const ph=wrap(b.pin+TAU*k/G.Np)*cp; if(Math.abs(ph)<0.9) Pp.push(toothPoly(G.Tp,PI+ph,a,0)); }
+  return {S:Sp, P:Pp};
+}
+function sweepDiff(G){
+  for(const s of [-1,1]) for(const i of [0,1]) for(let t=0;t<16;t++){
+    const M = meshPolys(G, meshBases(G,s,i,t/16*TAU/G.N));
+    for(const A of M.S) for(const B of M.P) if(overlap(A,B)) return false;
+  }
+  return true;
+}
+function gearModel(N){
+  const Np=pinionCount(N), gs=Math.atan2(N,Np), gp=PI/2-gs, A=A_CONE;
+  const Rs=A*Math.sin(gs), Rp=A*Math.sin(gp), m=2*Rs/N;
+  const al=25*PI/180, hf=1.25, bl=0.05*m;
+  const G={N,Np,gs,gp,A,Rs,Rp,m,al,hf,bl,k:FACE_K,offR:PI/N,offL:(PI/N)*(1-Np),shift:0.95*bl/Rs};
+  const zs=N/Math.cos(gs), zp=Np/Math.cos(gp);
+  let ha=1.0, ok=false, trims=0;
+  for(;trims<14;trims++){
+    G.ha=ha; G.Ts=involute(zs,m,al,ha,hf,bl); G.Tp=involute(zp,m,al,ha,hf,bl);
+    if(sweepDiff(G)){ ok=true; break; }
+    ha-=0.05;
+  }
+  G.ok=ok; G.trims=trims;
+  const Ts=G.Ts, Tp=G.Tp;
+  G.eps=(Math.sqrt(Ts.ra*Ts.ra-Ts.rb*Ts.rb)+Math.sqrt(Tp.ra*Tp.ra-Tp.rb*Tp.rb)-(Ts.r+Tp.r)*Math.sin(al))/(PI*m*Math.cos(al));
+  return G;
+}
+function diffPoint3D(G,s,i,p){
+  const rho=Math.hypot(p[0],p[1]), ph=Math.atan2(p[1],p[0]);
+  const cg=Math.cos(G.gs), sg=Math.sin(G.gs), th=ph/cg, mid=(1+G.k)/2, bca=G.A/cg;
+  let x=(bca-rho*sg)*mid, y=rho*cg*Math.cos(th)*mid, z=rho*cg*Math.sin(th)*mid;
+  if(s<0){ x=-x; z=-z; }
+  if(i){ y=-y; z=-z; }
+  return [x,y,z];
+}
+function gearContacts(G,r,out){
+  let cl=0, cr=0;
+  for(const s of [-1,1]) for(const i of (S.pin2?[0,1]:[0])){
+    const M = meshPolys(G, meshBases(G,s,i,r));
+    for(const A of M.S) for(const B of M.P){
+      const g=polyGap(A,B);
+      if(g.d < 0.19*G.bl){ out.push({p:diffPoint3D(G,s,i,g.p), s, i, p2:g.p}); if(s<0) cl++; else cr++; }
+    }
+  }
+  K.cL=cl; K.cR=cr;
+}
+
+/* ---------- ring gear (face gear) and drive pinion (spur) ---------- */
+function drivePsi(D,c){ return -c*D.zc/D.rp; }
+function drivePolys(D,c,z){
+  const P=[], R=[], psi=drivePsi(D,c);
+  for(let k=0;k<DRV_T;k++){ const ang=psi+TAU*k/DRV_T; if(Math.cos(ang)<-0.2) P.push(toothPoly(D.T,ang,D.cx,-D.e)); }
+  const ta=Math.tan(D.al), wr=-D.hf*D.m, wt=D.ha*D.m;
+  for(let j=0;j<RING_T;j++){
+    const ph=wrap(c+TAU*j/RING_T-D.shift); if(Math.abs(ph)>0.45) continue;
+    const cph=Math.cos(ph), sph=Math.sin(ph);
+    const s=(-z-D.e*sph)/cph; if(s<D.s1-1e-9 || s>D.s2+1e-9) continue;
+    const y=-D.e*cph+s*sph, f=1/Math.abs(cph);
+    const hr=(D.t/2-wr*ta)*f, ht=Math.max(0.003,(D.t/2-wt*ta))*f;
+    R.push([[D.xp+wr,y-hr],[D.xp+wt,y-ht],[D.xp+wt,y+ht],[D.xp+wr,y+hr]]);
+  }
+  return {P,R};
+}
+/* sweep every phase and 5 slices across the face; returns false on overlap, else the smallest gap */
+function sweepDrive(D){
+  let gap=1e9;
+  for(let t=0;t<16;t++){ const c=t/16*TAU/RING_T;
+    for(let zi=0;zi<5;zi++){ const z=-(D.s1+(D.s2-D.s1)*(zi+0.5)/5);
+      const M=drivePolys(D,c,z);
+      for(const A of M.R) for(const B of M.P){ if(overlap(A,B)) return false; const g=polyGap(A,B).d; if(g<gap) gap=g; } } }
+  return gap;
+}
+function driveModel(low){
+  const e=low?E_LOW:0, s1=Math.sqrt(RHO1*RHO1-e*e), s2=Math.sqrt(RHO2*RHO2-e*e);
+  const rm=(RHO1+RHO2)/2, zc=Math.sqrt(rm*rm-e*e), m=2*zc/RING_T, rp=DRV_T*m/2;
+  const al=25*PI/180, ha=0.8, hf=1.0, xs=0.35;
+  const D={e,s1,s2,zc,m,rp,al,ha,hf,xs,xp:XP,cx:XP+rp+xs*m};
+  let bl=0.05*m, tries=0, ok=false;
+  for(;tries<10;tries++){
+    D.bl=bl; D.t=PI*m/2-bl; D.shift=0; D.T=involute(DRV_T,m,al,1.0,0.9,bl,xs);
+    const g0=sweepDrive(D);                       // centred: measure the real clearance
+    if(g0!==false){
+      D.shift=0.85*g0/zc; D.tol=0.5*g0;            // close 85% of it on the drive flank
+      if(sweepDrive(D)!==false){ ok=true; break; }
+    }
+    bl+=0.04*m;
+  }
+  D.ok=ok; D.tries=tries;
+  const T=D.T;
+  D.eps=(Math.sqrt(T.ra*T.ra-T.rb*T.rb)-rp*Math.sin(al)+(ha-xs)*m/Math.sin(al))/(PI*m*Math.cos(al));
+  return D;
+}
+function driveContacts(D,c,out){
+  /* the loaded pair is the closest one on the drive flank; a second pair shares load if almost as close */
+  const z=-(D.s1+D.s2)/2, M=drivePolys(D,c,z), all=[];
+  for(const A of M.R) for(const B of M.P){ const g=polyGap(A,B); all.push(g); }
+  let gmin=1e9; for(const g of all) if(g.d<gmin) gmin=g.d;
+  if(gmin<D.bl) for(const g of all) if(g.d<gmin+0.12*D.bl) out.push({p:[g.p[0],g.p[1],z]});
+}
+
+/* ---------- spoke & crossbar contact solver (position based) ---------- */
+const P1=[0,0,0], Q1=[0,0,0], P2=[0,0,0], Q2=[0,0,0], touched=[false,false];
+function contactsPass(apply, out){
+  const SGc=spokeGeo(), rp=SGc.r, rsum=2*rp, off=pegOff(), N=S.N, nA=2*S.bars, pins=S.pin2?2:1;
+  const YB=SGc.YB, XS=SGc.XS, ARM=SGc.ARM, RSP=SGc.RSP;
+  const wP=4, wS=1, wC=0.1;
+  let maxPen=0;
+  touched[0]=touched[1]=false;
+  for(let i=0;i<pins;i++){
+    for(let a=0;a<nA;a++){
+      for(const s of [-1,1]){
+        for(let k=0;k<N;k++){
+          const beta=K.psi[i]+a*PI/S.bars, dx=Math.cos(beta), dz=-Math.sin(beta);
+          if(dx*s<0.05) continue;
+          const th=(s<0?K.tL:K.tR)-K.c+off+TAU*k/N+(i?PI:0);
+          const cy=Math.cos(th); if(cy<0.2) continue;
+          const sy=Math.sin(th);
+          /* broad phase: does the arm reach the spoke plane, and is it near this spoke? */
+          const reach=ARM*dx*s;
+          if(reach < XS-rsum-0.01) continue;
+          const za = reach<XS ? ARM*dz : XS*dz/(dx*s);
+          if(Math.abs(YB*sy/cy - za) > 0.5) continue;
+          P1[0]=ARM_IN*dx; P1[1]=YB; P1[2]=ARM_IN*dz; Q1[0]=ARM*dx; Q1[1]=YB; Q1[2]=ARM*dz;
+          P2[0]=s*XS; P2[1]=SP_IN*cy; P2[2]=SP_IN*sy; Q2[0]=s*XS; Q2[1]=RSP*cy; Q2[2]=RSP*sy;
+          const r=segSeg(P1,Q1,P2,Q2), C=r.d-rsum;
+          if(C<0.004) touched[i]=true;
+          if(out && C<0.004){
+            const mp=[(r.c1[0]+r.c2[0])/2,(r.c1[1]+r.c2[1])/2,(r.c1[2]+r.c2[2])/2];
+            out.push({p: i?[mp[0],-mp[1],-mp[2]]:mp, pf:mp, s, i});
+            if(s<0) K.cL++; else K.cR++;
+          }
+          if(C>=0) continue;
+          if(-C>maxPen) maxPen=-C;
+          if(!apply) continue;
+          let nx=0, ny=0, nz=1;
+          if(r.d>1e-7){ nx=(r.c1[0]-r.c2[0])/r.d; ny=(r.c1[1]-r.c2[1])/r.d; nz=(r.c1[2]-r.c2[2])/r.d; }
+          const Jp = nx*r.c1[2] - nz*r.c1[0];
+          const Js = -(-ny*r.c2[2] + nz*r.c2[1]);
+          const Jc = -Js;
+          const held = s<0 ? S.holdL : S.holdR;
+          const ws = held ? 0 : wS;
+          const den = wP*Jp*Jp + ws*Js*Js + wC*Jc*Jc;
+          if(den<1e-9) continue;
+          const lam = -C/den;
+          K.psi[i] += wP*Jp*lam;
+          if(s<0) K.tL += ws*Js*lam; else K.tR += ws*Js*lam;
+          K.c += wC*Jc*lam;
+        }
+      }
+    }
+  }
+  return maxPen;
+}
+function pegSolve(dt,w,a){
+  const SUB=S.sub||6, h=dt/SUB, road=!S.holdL && !S.holdR;
+  let want=0, got=0;
+  for(let sub=0; sub<SUB; sub++){
+    const c0=K.c, cT=K.c+w*h, L0=K.tL, Rw0=K.tR;
+    want += w*h;
+    if(!S.holdL) K.tL -= LAG;
+    if(!S.holdR) K.tR -= LAG;
+    for(let it=0; it<IT; it++){
+      if(it<IT-5) K.c += 0.6*(cT-K.c);
+      contactsPass(true,null);
+      if(road){
+        const dL=K.tL-L0, dR=K.tR-Rw0, JL=1-a, JR=-(1+a);
+        const C=dL*JL+dR*JR, lam=-C/(JL*JL+JR*JR)*0.8;
+        K.tL += JL*lam; K.tR += JR*lam;
+      }
+    }
+    if(K.tL<L0) K.tL=L0;
+    if(K.tR<Rw0) K.tR=Rw0;
+    for(let i=0;i<2;i++) if(!touched[i]){
+      const step=PI/S.bars, target=Math.round(K.psi[i]/step)*step;
+      K.psi[i] += (target-K.psi[i])*0.04;   // light return spring on the pivot
+    }
+    for(let it=0; it<5; it++) contactsPass(true,null);
+    got += K.c-c0;
+  }
+  K.cL=0; K.cR=0;
+  K.pen = contactsPass(false, K.contacts);
+  K.stallFrac = want>1e-6 ? got/want : 1;
+}
+
+/* ---------- one simulation step ---------- */
+function step(dt){
+  const w=S.drive*TAU/60, held=S.holdL||S.holdR, turning=Math.abs(S.steer)>0.04, a=0.35*S.steer;
+  const dir=S.steer<0?"left":"right";
+  K.contacts.length=0; K.dContacts.length=0; K.pen=0; K.cL=K.cR=0; K.slip=0; K.stallFrac=1;
+  let msg="", tone="ok";
+
+  if(S.mode==="free"){
+    K.tL += (S.holdL?0:w*(1+a))*dt; K.tR += (S.holdR?0:w*(1-a))*dt;
+    msg = held ? "A held wheel stops and the other carries on by itself. The two wheels are completely independent."
+        : turning ? `Turning ${dir}: each wheel turns freely on its own axle, so the outer one simply spins faster. Nothing connects them to the engine yet.`
+        : "Straight ahead: both free wheels roll at the same speed. Steer to see them split.";
+  }
+  else if(S.mode==="locked"){
+    const wc=held?0:w;
+    K.c+=wc*dt; K.tL=K.tR=K.c; K.psi[0]=K.psi[1]=0; K.u=0;
+    if(held){ msg="One wheel is held, so the bolted bar can't move and the other wheel won't budge either."; tone="bad"; }
+    else if(turning){ K.slip=Math.abs(a)*wc; msg=`Turning ${dir}: the bolted bar forces both wheels to the same speed, so the tyres have to scrub and slide on the road.`; tone="warn"; }
+    else msg="Straight ahead: the bar pushes both spokes and both wheels turn with the support.";
+  }
+  else if(S.gear && GM){
+    let wc=w, rdot;
+    if(S.holdL&&S.holdR){ wc=0; rdot=0; } else if(S.holdL) rdot=-wc; else if(S.holdR) rdot=wc; else rdot=a*wc;
+    K.c+=wc*dt; K.u+=rdot*dt; K.tL=K.c+K.u; K.tR=K.c-K.u;
+    K.psi[0]=K.u*GM.N/GM.Np; K.psi[1]=K.psi[0]+PI*GM.N/GM.Np;
+    gearContacts(GM,K.u,K.contacts);
+    if(S.holdL&&S.holdR){ msg="Both wheels held: the side gears lock the pinions and the support can't turn."; tone="bad"; }
+    else if(held){ msg=`${S.holdL?"Left":"Right"} wheel held: the pinions roll round the held side gear and drive the ${S.holdL?"right":"left"} wheel at exactly twice the support's speed.`; }
+    else if(turning){ msg=`Turning ${dir}: the pinions turn on their pin, so the outer wheel speeds up exactly as much as the inner one slows down.`; }
+    else msg="Straight ahead: the pinions don't turn on their pin. They act like a solid bar and carry both side gears round.";
+    if(!GM.ok){ msg+=" Warning: these tooth counts still interfere."; tone="warn"; }
+  }
+  else {
+    pegSolve(dt,w,a);
+    const lossT=0.25;
+    K.noL = (!S.holdL && K.cL===0 && w>0) ? K.noL+dt : 0;
+    K.noR = (!S.holdR && K.cR===0 && w>0) ? K.noR+dt : 0;
+    const lostL=K.noL>lossT, lostR=K.noR>lossT;
+    if(S.holdL&&S.holdR){ msg="Both wheels held: the spokes trap the bar and the support stalls."; tone="bad"; }
+    else if(w>0 && K.stallFrac<0.3){ msg="Jammed: a bar end is wedged square against a spoke and the support can't turn. Release the wheel or add a crossbar."; tone="bad"; }
+    else if((S.holdL&&lostR)||(S.holdR&&lostL)){ msg="The bar has swung right past the spoke, so nothing is driving the free wheel. A second bar and more spokes fix this."; tone="bad"; }
+    else if(!held && (lostL||lostR)){ msg=`The ${lostL?"left":"right"} spokes have lost the bar, so that wheel isn't being driven. Straighten up or add spokes.`; tone="bad"; }
+    else if(held){ msg=`${S.holdL?"Left":"Right"} wheel held: the bar pivots and pushes the ${S.holdL?"right":"left"} spokes round at about twice the support's speed.`; }
+    else if(turning && Math.abs(K.wL-K.wR) < 0.25*Math.abs(2*a*w)){
+      K.slip=Math.abs(a)*w; msg=`Turning ${dir}: the bar is wedged between spokes and can't pivot, so it acts like the bolted bar and the tyres scrub. Add a crossbar.`; tone="warn"; }
+    else if(turning){ msg=`Turning ${dir}: the bar tilts on its pivot, so the outer wheel runs faster than the inner one without sliding.`; }
+    else msg="Straight ahead: the bar presses both spokes equally and doesn't pivot.";
+    if(K.smooth!==null && K.smooth<0.7 && tone==="ok"){ msg+=" The push comes in jerks because of the gaps between spokes."; tone="warn"; }
+  }
+  if(S.ring && S.mode!=="free" && DM) driveContacts(DM,K.c,K.dContacts);
+
+  /* measured speeds */
+  if(dt>0){ K.wL=(K.tL-K.pL)/dt; K.wR=(K.tR-K.pR)/dt; K.wC=S.mode==="free"?NaN:(K.c-K.pC)/dt; }
+  K.pL=K.tL; K.pR=K.tR; K.pC=K.c;
+  const rel=(K.wL-K.wR)/2; K.rel.push(rel); if(K.rel.length>90) K.rel.shift();
+  let mean=0; for(const v of K.rel) mean+=Math.abs(v); mean/=K.rel.length;
+  if(mean>0.05 && K.rel.length>20){ let sd=0; for(const v of K.rel) sd+=(Math.abs(v)-mean)**2; sd=Math.sqrt(sd/K.rel.length); K.smooth=clamp01(1-sd/mean); }
+  else K.smooth=null;
+  K.msg=msg; K.tone=tone;
+}
+function resetRelative(){
+  K.tL=K.tR=K.c; K.psi[0]=K.psi[1]=0; K.u=0; K.pL=K.tL; K.pR=K.tR; K.pC=K.c; K.rel.length=0; K.noL=K.noR=0;
+}
+const gmCache={}, dmCache={};
+function rebuildModels(){
+  GM = S.N>=8 ? (gmCache[S.N] || (gmCache[S.N]=gearModel(S.N))) : null;
+  const k=S.low?1:0; DM = dmCache[k] || (dmCache[k]=driveModel(S.low));
+}
+
+return {S,K,step,resetRelative,rebuildModels,get GM(){return GM;},get DM(){return DM;},
+  spokeGeo,pegR,pegOff,drivePsi,driveModel,gearModel,meshBases,meshPolys,pinionCount,toothPoly,involute,
+  C:{R0,ARM_IN,SP_IN,A_CONE,FACE_K,RING_T,DRV_T,XP,RHO1,RHO2,E_LOW,UNIT_MM,TAU,PI}};
+})();
+
+</script>
+<script>
+(function(){
+const D = DIFF, S = D.S, K = D.K, C = D.C, TAU = C.TAU, PI = C.PI;
+const $ = id => document.getElementById(id);
+const css = getComputedStyle(document.documentElement);
+const tok = n => css.getPropertyValue(n).trim();
+
+/* ---------- Steps, following the film ---------- */
+const STEPS = [
+  {t:"The corner problem", btn:"Corners",
+   p:"On a turn the outside wheel covers more ground than the inside wheel in the same time, so it has to spin faster. A wagon copes because each wheel turns freely on its own axle. Steer and watch the two wheels split. Nothing drives them yet.",
+   set:{mode:"free",N:1,bars:1,gear:false,pin2:false,ring:false,steer:-0.5}},
+  {t:"A spoke and a fixed bar", btn:"Fixed bar",
+   p:"Fasten a spoke to the inner end of each axle and push both with a crossbar held by a support that turns freely on the axles. Both wheels now go round together. Steer, or hold one wheel: the bolted bar can't let one wheel run faster, and a held wheel stops the other dead.",
+   set:{mode:"locked",N:1,bars:1,gear:false,pin2:false,ring:false,steer:0}},
+  {t:"Put the bar on a pivot", btn:"Pivot",
+   p:"Let the bar swing on a pivot. Going straight it presses both spokes equally. Hold a wheel and the bar tilts, pushing the other spoke on at twice the speed until the bar swings right past it and the drive is lost. A light spring brings the bar back, so the drive comes and goes.",
+   set:{mode:"pivot",N:1,bars:1,gear:false,pin2:false,ring:false,steer:0}},
+  {t:"Another bar, more spokes", btn:"Second bar",
+   p:"Add a second crossbar and more spokes, so one bar end picks up the next spoke as the last one slips away. Holding a wheel now sends the other round at a steady average of twice the support's speed. Straight bars don't roll evenly against straight spokes, though, so watch the close-up and the speed trace.",
+   set:{mode:"pivot",N:4,bars:2,gear:false,pin2:false,ring:false,steer:0}},
+  {t:"Spokes become gears", btn:"Gears",
+   p:"Fill the gaps and shape the spokes for constant contact and you have the side gears and pinions of a real differential. These teeth are involute bevels cut on cones that meet at the centre, so the speed ratio stays exact. A second pinion shares the load. Try fewer teeth and watch the contact ratio fall.",
+   set:{mode:"pivot",N:16,bars:2,gear:true,pin2:true,ring:false,steer:-0.4}},
+  {t:"Ring gear, low centre drive", btn:"Ring gear",
+   p:"A large ring gear fixed to the support, turned by a small pinion on the driveshaft, brings in the engine's power. Moving the pinion below the centre line (a hypoid offset) drops the driveshaft and the car floor with it. Toggle low centre drive to compare.",
+   set:{mode:"pivot",N:16,bars:2,gear:true,pin2:true,ring:true,low:true,steer:0}}
+];
+S.labels = true; S.marks = true;
+/* phones: lighter renderer and solver */
+const small = window.matchMedia && (window.matchMedia("(max-width: 600px)").matches || window.matchMedia("(pointer: coarse)").matches);
+S.sub = small ? 4 : 6;
+
+/* ---------- Three.js scene ---------- */
+const stageEl = $("stage");
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(small?1.5:2, window.devicePixelRatio||1));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+stageEl.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+camera.position.set(6.4, 4.4, 8.4);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.target.set(0.3, 0, -0.6);
+controls.enableDamping = true;
+controls.minDistance = 2.2; controls.maxDistance = 28;
+controls.maxPolarAngle = Math.PI*0.52;
+
+scene.add(new THREE.HemisphereLight(0xe6eeff, 0x2a2018, 0.8));
+const sun = new THREE.DirectionalLight(0xfff0d6, 1.1);
+sun.position.set(6, 11, 7); sun.castShadow = true;
+sun.shadow.mapSize.set(small?512:1024, small?512:1024);
+Object.assign(sun.shadow.camera,{left:-10,right:10,top:10,bottom:-10,near:1,far:40});
+scene.add(sun);
+const rim = new THREE.DirectionalLight(0x8fd8e2, 0.4); rim.position.set(-8, 4, -6); scene.add(rim);
+
+const M = (color, metal=0.35, rough=0.45, extra={}) => new THREE.MeshStandardMaterial(Object.assign({color, metalness:metal, roughness:rough}, extra));
+const G2 = {flatShading:true, side:THREE.DoubleSide};
+const mat = {
+  steel:M(0xb9c1c7,0.45,0.35), dark:M(0x2e363b,0.3,0.7), tire:M(0x1d2226,0.05,0.9),
+  brass:M(0xd9a441,0.5,0.35), brassGlass:M(0xd9a441,0.4,0.4,{transparent:true,opacity:0.18,depthWrite:false,side:THREE.DoubleSide}),
+  left:M(0x5cc8d6,0.25,0.4), right:M(0xf08a6c,0.25,0.4), ivory:M(0xeee6d0,0.15,0.5),
+  gearL:M(0x5cc8d6,0.3,0.45,G2), gearR:M(0xf08a6c,0.3,0.45,G2), gearIvory:M(0xeee6d0,0.2,0.5,G2), gearSteel:M(0xb9c1c7,0.45,0.4,G2),
+  lock:M(0xff6b5e,0.2,0.5),
+  floor:M(0xd9a441,0.1,0.8,{transparent:true,opacity:0.16,depthWrite:false,side:THREE.DoubleSide}),
+  ground:M(0x161e22,0,1)
+};
+function shadow(m){ m.castShadow = true; m.receiveShadow = true; return m; }
+function cyl(r1,r2,h,seg,m){ return shadow(new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,seg),m)); }
+function box(w,h,d,m){ return shadow(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m)); }
+const UP = new THREE.Vector3(0,1,0);
+function rod(a,b,r,m){
+  const d = new THREE.Vector3().subVectors(b,a), L = d.length();
+  const mesh = cyl(r,r,L,10,m);
+  mesh.position.copy(a).addScaledVector(d,0.5);
+  mesh.quaternion.setFromUnitVectors(UP, d.normalize());
+  return mesh;
+}
+function xRod(x0,x1,r,m){ const c=cyl(r,r,Math.abs(x1-x0),20,m); c.rotation.z=Math.PI/2; c.position.x=(x0+x1)/2; return c; }
+function clear(g, keep){ for(let i=g.children.length-1;i>=0;i--){ const c=g.children[i]; if(keep && keep.includes(c)) continue; g.remove(c); c.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); } }
+
+/* ground + frame */
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(60,60), mat.ground);
+ground.rotation.x = -Math.PI/2; ground.position.y = -1.8; ground.receiveShadow = true; scene.add(ground);
+const grid = new THREE.GridHelper(40, 40, 0x2b383f, 0x1f292e); grid.position.y = -1.79; scene.add(grid);
+[-2.7, 2.7].forEach(x=>{
+  const post = cyl(0.065,0.065,1.66,16,mat.steel); post.position.set(x,-0.85,0); scene.add(post);
+  const foot = cyl(0.26,0.3,0.07,28,mat.steel); foot.position.set(x,-1.64,0); scene.add(foot);
+  const ball = shadow(new THREE.Mesh(new THREE.SphereGeometry(0.2,28,20), mat.steel)); ball.position.set(x,0,0); scene.add(ball);
+});
+[-2.7,2.7].forEach(x=>{ const plinth=box(1.1,0.1,1.3,M(0x8f8a80,0.05,0.85)); plinth.position.set(x,-1.73,0); scene.add(plinth); });
+
+/* sides: outer axle + wheel are permanent, inner parts rebuild */
+const side = {}, holder = {}, wheel = {};
+[-1,1].forEach(s=>{
+  const g = new THREE.Group(); scene.add(g); side[s] = g;
+  const sm = s<0 ? mat.left : mat.right;
+  g.add(xRod(s*1.3, s*4.4, 0.09, mat.steel));
+  const key = box(2.9,0.05,0.12,sm); key.position.set(s*2.9,0.09,0); g.add(key);
+  [2.25,3.15].forEach(x=>{ const col=cyl(0.14,0.14,0.16,20,mat.steel); col.rotation.z=Math.PI/2; col.position.x=s*x; g.add(col); });
+  const w = new THREE.Group(); w.position.x = s*4.4; g.add(w); wheel[s] = w;
+  const tire = shadow(new THREE.Mesh(new THREE.TorusGeometry(1.52,0.28,16,56), mat.tire.clone())); tire.rotation.y = Math.PI/2; w.add(tire); w.userData.tire = tire;
+  [-0.2,-0.1,0,0.1,0.2].forEach(o=>{ const rib=new THREE.Mesh(new THREE.TorusGeometry(1.52+Math.sqrt(0.28*0.28-o*o)-0.01,0.028,6,72), mat.dark); rib.rotation.y=Math.PI/2; rib.position.x=o; w.add(rib); });
+  const rimD = cyl(1.26,1.26,0.12,48,mat.steel); rimD.rotation.z = Math.PI/2; w.add(rimD);
+  const hub = cyl(0.34,0.34,0.3,24,sm); hub.rotation.z = Math.PI/2; w.add(hub);
+  for(let i=0;i<6;i++){ const sp = box(0.16,1.0,0.12,mat.dark); const a=i*Math.PI/3; sp.position.set(s*0.07,0.68*Math.cos(a),0.68*Math.sin(a)); sp.rotation.x=a; w.add(sp); }
+  const mark = box(0.18,0.42,0.22,sm); mark.position.set(s*0.08,1.0,0); w.add(mark);
+  w.traverse(o=>{ o.userData.side = s; });
+  const h = new THREE.Group(); g.add(h); holder[s] = h;
+});
+
+/* support (carrier): a case for the gear stages, the film's crank arm for the spoke stages */
+const carrier = new THREE.Group(); scene.add(carrier);
+const cage = new THREE.Group(); carrier.add(cage);
+const filmArm = new THREE.Group(); carrier.add(filmArm);
+const supportMarker = new THREE.Object3D(); carrier.add(supportMarker);
+[-1,1].forEach(s=>{
+  const plate = new THREE.Mesh(new THREE.CylinderGeometry(1.5,1.5,0.06,56), mat.brassGlass);
+  plate.rotation.z = Math.PI/2; plate.position.x = s*1.22; cage.add(plate);
+  const edge = shadow(new THREE.Mesh(new THREE.TorusGeometry(1.5,0.035,8,64), mat.brass)); edge.rotation.y = Math.PI/2; edge.position.x = s*1.22; cage.add(edge);
+  const sleeve = cyl(0.2,0.2,0.28,24,mat.brass); sleeve.rotation.z = Math.PI/2; sleeve.position.x = s*1.22; cage.add(sleeve);
+  const strap = box(2.5,0.09,0.36,mat.brass); strap.position.y = s*1.44; cage.add(strap);
+});
+const pivotPin = cyl(0.05,0.05,2.88,12,mat.steel); cage.add(pivotPin);
+const lockClamp = box(0.3,0.26,0.3,mat.lock); carrier.add(lockClamp);
+const pinTop = new THREE.Group(); carrier.add(pinTop);
+const pinBotFrame = new THREE.Group(); pinBotFrame.rotation.x = Math.PI; carrier.add(pinBotFrame);
+const pinBot = new THREE.Group(); pinBotFrame.add(pinBot);
+const barMarker = new THREE.Object3D(); pinTop.add(barMarker);
+const ringG = new THREE.Group(); carrier.add(ringG);
+const drvG = new THREE.Group(); scene.add(drvG);
+const drvSpin = new THREE.Group(); drvG.add(drvSpin);
+const drvStatic = new THREE.Group(); drvG.add(drvStatic);
+const floor = new THREE.Mesh(new THREE.BoxGeometry(7,0.06,5), mat.floor); floor.position.set(0,0.6,-5.2); scene.add(floor);
+floor.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(7,0.06,5)), new THREE.LineBasicMaterial({color:0xd9a441,transparent:true,opacity:0.55})));
+
+/* ---------- geometry helpers ---------- */
+function pushTri(a,p,q,r){ a.push(p[0],p[1],p[2],q[0],q[1],q[2],r[0],r[1],r[2]); }
+function centroid(P){ let x=0,y=0,z=0; for(const p of P){x+=p[0];y+=p[1];z+=p[2];} return [x/P.length,y/P.length,z/P.length]; }
+function loft(arr,A,B){
+  const L=A.length;
+  for(let i=0;i<L;i++){ const j=(i+1)%L; pushTri(arr,A[i],A[j],B[j]); pushTri(arr,A[i],B[j],B[i]); }
+  const ca=centroid(A), cb=centroid(B);
+  for(let i=0;i<L;i++){ const j=(i+1)%L; pushTri(arr,ca,A[j],A[i]); pushTri(arr,cb,B[i],B[j]); }
+}
+function geoFrom(arr){ const g=new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(arr,3)); g.computeVertexNormals(); return g; }
+function replicateX(base,n,angleOf){
+  const out=[];
+  for(let t=0;t<n;t++){ const a=angleOf(t), c=Math.cos(a), s=Math.sin(a);
+    for(let q=0;q<base.length;q+=3){ const x=base[q], y=base[q+1], z=base[q+2]; out.push(x, y*c-z*s, y*s+z*c); } }
+  return out;
+}
+/* bevel teeth: involute profile on the back cone, lofted straight to the cone apex */
+function bevelTeeth(T,gamma,A,k,n,angleOf,m){
+  const cg=Math.cos(gamma), sg=Math.sin(gamma), bca=A/cg, fl=T.flank, sink=0.5*(T.r-T.rf);
+  const prof=[[T.rf-sink,-fl[0][1]]];
+  fl.forEach(f=>prof.push([f[0],-f[1]]));
+  for(let i=fl.length-1;i>=0;i--) prof.push([fl[i][0],fl[i][1]]);
+  prof.push([T.rf-sink,fl[0][1]]);
+  const O=prof.map(([rho,ph])=>{ const th=ph/cg; return [bca-rho*sg, rho*cg*Math.cos(th), rho*cg*Math.sin(th)]; });
+  const I=O.map(v=>[v[0]*k,v[1]*k,v[2]*k]);
+  const base=[]; loft(base,O,I);
+  return shadow(new THREE.Mesh(geoFrom(replicateX(base,n,angleOf)), m));
+}
+function bevelBody(T,gamma,A,k,bore,m){
+  const cg=Math.cos(gamma), sg=Math.sin(gamma), bca=A/cg;
+  const xo=bca-T.rf*sg, ro=T.rf*cg, back=xo+0.07;
+  const pts=[[bore,k*xo],[k*ro,k*xo],[ro,xo],[ro,back],[bore,back]].map(p=>new THREE.Vector2(p[0],p[1]));
+  const mesh=shadow(new THREE.Mesh(new THREE.LatheGeometry(pts,56), m)); mesh.rotation.z=-Math.PI/2;
+  return {mesh, back};
+}
+
+/* ---------- builders ---------- */
+function buildSide(s){
+  const h=holder[s]; clear(h);
+  if(S.mode==="free") return;
+  const sm = s<0 ? mat.left : mat.right;
+  if(S.gear && D.GM){
+    const G=D.GM, gm = s<0 ? mat.gearL : mat.gearR, off = s<0 ? G.offL : G.offR;
+    const grp=new THREE.Group(); if(s<0) grp.rotation.y=Math.PI;
+    grp.add(bevelTeeth(G.Ts,G.gs,G.A,G.k,G.N, j=> s>0 ? off-G.shift+TAU*j/G.N : -(off-G.shift+TAU*j/G.N), gm));
+    const b=bevelBody(G.Ts,G.gs,G.A,G.k,0.1,gm); grp.add(b.mesh);
+    grp.add(xRod(b.back-0.02, 1.32, 0.16, gm));
+    h.add(grp);
+  } else {
+    const SG=D.spokeGeo(), off=D.pegOff();
+    const disc=cyl(C.SP_IN+0.05,C.SP_IN+0.05,0.1,28,sm); disc.rotation.z=Math.PI/2; disc.position.x=s*SG.XS; h.add(disc);
+    h.add(xRod(s*SG.XS, s*1.32, 0.09, mat.steel));
+    for(let k=0;k<S.N;k++){
+      const a=off+TAU*k/S.N, cy=Math.cos(a), sz=Math.sin(a);
+      h.add(rod(new THREE.Vector3(s*SG.XS,C.SP_IN*cy,C.SP_IN*sz), new THREE.Vector3(s*SG.XS,SG.RSP*cy,SG.RSP*sz), SG.r, sm));
+      const tip=shadow(new THREE.Mesh(new THREE.SphereGeometry(SG.r,12,10), sm)); tip.position.set(s*SG.XS,SG.RSP*cy,SG.RSP*sz); h.add(tip);
+    }
+  }
+}
+function buildPinion(g){
+  clear(g, [barMarker]);
+  if(S.gear && D.GM){
+    const G=D.GM, grp=new THREE.Group(); grp.rotation.z=Math.PI/2;
+    grp.add(bevelTeeth(G.Tp,G.gp,G.A,G.k,G.Np, j=> TAU*j/G.Np-PI, mat.gearIvory));
+    grp.add(bevelBody(G.Tp,G.gp,G.A,G.k,0.07,mat.gearIvory).mesh);
+    g.add(grp);
+  } else {
+    const SG=D.spokeGeo();
+    const boss=cyl(Math.max(0.09,1.7*SG.r),Math.max(0.09,1.7*SG.r),0.16,16,mat.ivory); boss.position.y=SG.YB; g.add(boss);
+    for(let j=0;j<S.bars;j++){
+      const sub=new THREE.Group(); sub.rotation.y=j*PI/S.bars; sub.position.y=SG.YB;
+      sub.add(xRod(-SG.ARM, SG.ARM, SG.r, mat.ivory));
+      [-1,1].forEach(e=>{ const tip=shadow(new THREE.Mesh(new THREE.SphereGeometry(SG.r,12,10),mat.ivory)); tip.position.x=e*SG.ARM; sub.add(tip); });
+      g.add(sub);
+    }
+  }
+}
+function buildRing(){
+  clear(ringG); clear(drvSpin); clear(drvStatic);
+  const Dm=D.DM; if(!Dm) return;
+  const ta=Math.tan(Dm.al), wr=-Dm.hf*Dm.m, wt=Dm.ha*Dm.m, sink=0.05;
+  const hw=w=>Math.max(0.003, Dm.t/2-w*ta);
+  const sec=[[-hw(wr),wr-sink],[-hw(wr),wr],[-hw(wt),wt],[hw(wt),wt],[hw(wr),wr],[hw(wr),wr-sink]];
+  const mk=s=>sec.map(([u,w])=>[Dm.xp+w, -Dm.e-u, -s]);
+  const base=[]; loft(base, mk(Dm.s1), mk(Dm.s2));
+  ringG.add(shadow(new THREE.Mesh(geoFrom(replicateX(base,C.RING_T,j=>TAU*j/C.RING_T-Dm.shift)), mat.gearSteel)));
+  const face=Dm.xp+wr-sink+0.02, x0=1.25;
+  const sh=new THREE.Shape(); sh.absarc(0,0,C.RHO2+0.07,0,TAU,false);
+  const hole=new THREE.Path(); hole.absarc(0,0,C.RHO1-0.12,0,TAU,true); sh.holes.push(hole);
+  const body=shadow(new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:face-x0,bevelEnabled:false,curveSegments:56}), mat.steel));
+  body.rotation.y=Math.PI/2; body.position.x=x0; ringG.add(body);
+  for(let i=0;i<8;i++){ const a=i*Math.PI/4; const b=cyl(0.05,0.05,0.12,8,mat.dark); b.rotation.z=Math.PI/2; b.position.set(x0-0.02,(C.RHO1-0.05)*Math.cos(a),(C.RHO1-0.05)*Math.sin(a)); ringG.add(b); }
+
+  drvG.position.set(Dm.cx, -Dm.e, 0);
+  const shape=new THREE.Shape(); let first=true;
+  for(let k=0;k<C.DRV_T;k++) D.toothPoly(Dm.T, TAU*k/C.DRV_T, 0, 0).forEach(p=>{ if(first){ shape.moveTo(p[0],p[1]); first=false; } else shape.lineTo(p[0],p[1]); });
+  const len=Dm.s2-Dm.s1+0.04;
+  const pin=shadow(new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:len,bevelEnabled:false,curveSegments:1}), mat.gearIvory));
+  pin.position.z=-Dm.s2-0.02; drvSpin.add(pin);
+  const L=7.0-Dm.s2, shaft=cyl(0.11,0.11,L,16,mat.steel); shaft.rotation.x=Math.PI/2; shaft.position.z=-(Dm.s2+L/2); drvSpin.add(shaft);
+  const key=box(0.05,0.22,L-0.6,mat.brass); key.position.set(0,0.1,-(Dm.s2+L/2)); drvSpin.add(key);
+  const uj=cyl(0.2,0.2,0.3,16,mat.dark); uj.rotation.x=Math.PI/2; uj.position.z=-Dm.s2-1.0; drvSpin.add(uj);
+  const engine=box(1.2,1.0,0.8,mat.dark); engine.position.z=-7.4; drvStatic.add(engine);
+  floor.position.y=-Dm.e+0.6;
+}
+function buildFilmArm(){
+  clear(filmArm);
+  if(S.gear) return;
+  const SG=D.spokeGeo(), xb=-(Math.max(SG.ARM,SG.XS)+0.22), Ra=Math.max(SG.RSP+SG.r+0.11, SG.YB+0.24), rr=0.055;   // clears spoke tips and bar, stays above the floor
+  const bossR=Math.max(0.035, Math.min(0.09, SG.XS-SG.r-0.03));
+  const block=box(0.3,0.36,0.36,mat.brass); block.position.x=xb; filmArm.add(block);
+  const sleeve=cyl(0.13,0.13,0.46,20,mat.brass); sleeve.rotation.z=Math.PI/2; sleeve.position.x=xb; filmArm.add(sleeve);
+  (S.pin2?[1,-1]:[1]).forEach(sg=>{
+    const g=new THREE.Group(); if(sg<0) g.rotation.x=Math.PI;
+    g.add(rod(new THREE.Vector3(xb,0.18,0), new THREE.Vector3(xb,Ra,0), rr, mat.brass));
+    const knee=shadow(new THREE.Mesh(new THREE.SphereGeometry(rr*1.25,16,12), mat.brass)); knee.position.set(xb,Ra,0); g.add(knee);
+    g.add(rod(new THREE.Vector3(xb,Ra,0), new THREE.Vector3(0,Ra,0), rr, mat.brass));
+    const head=cyl(bossR+0.04,bossR+0.04,0.24,20,mat.brass); head.position.set(0,Ra,0); g.add(head);
+    const stem=cyl(bossR,bossR,Ra-SG.YB-0.09,16,mat.steel); stem.position.set(0,(Ra+SG.YB+0.09)/2,0); g.add(stem);
+    filmArm.add(g);
+  });
+  supportMarker.position.set(xb, Ra+0.25, 0);
+}
+function rebuild(){
+  buildSide(-1); buildSide(1); buildPinion(pinTop); buildPinion(pinBot);
+  const yb = (S.gear && D.GM) ? D.GM.Rs : D.spokeGeo().YB;
+  barMarker.position.set(0, yb+0.32, 0);
+  buildFilmArm();
+  if(S.gear) supportMarker.position.set(-1.0, 1.75, 0);
+  lockClamp.position.y = yb+0.24;
+  applyVisibility();
+}
+function applyVisibility(){
+  const linked = S.mode!=="free";
+  holder[-1].visible = holder[1].visible = linked;
+  carrier.visible = linked;
+  cage.visible = S.gear;
+  filmArm.visible = !S.gear;
+  lockClamp.visible = S.mode==="locked";
+  pinTop.visible = linked;
+  pinBot.visible = linked && S.pin2;
+  ringG.visible = drvG.visible = floor.visible = linked && S.ring;
+}
+
+/* ---------- contact markers ---------- */
+const markGeo=new THREE.SphereGeometry(0.035,10,8);
+const markMat=new THREE.MeshBasicMaterial({color:0xff4f45, depthTest:false, transparent:true});
+const pools={carrier:{parent:carrier,list:[]}, world:{parent:scene,list:[]}};
+function showMarks(pool, pts){
+  let i=0;
+  if(S.marks) for(;i<pts.length;i++){
+    let m=pool.list[i];
+    if(!m){ m=new THREE.Mesh(markGeo,markMat); m.renderOrder=10; pool.parent.add(m); pool.list.push(m); }
+    m.visible=true; m.position.set(pts[i].p[0],pts[i].p[1],pts[i].p[2]);
+  }
+  for(;i<pool.list.length;i++) pool.list[i].visible=false;
+}
+
+/* ---------- labels ---------- */
+const labelsEl = $("labels");
+const v3 = (x,y,z)=>new THREE.Vector3(x,y,z);
+const sideX = s => s*((S.gear&&D.GM) ? 0.75 : D.spokeGeo().XS);
+const LABELS = [
+  {text:"Left wheel", dot:"--left", pos:()=>v3(-4.4,2.3,0), show:()=>true},
+  {text:"Right wheel", dot:"--right", pos:()=>v3(4.4,2.3,0), show:()=>true},
+  {text:()=>S.gear?"Side gear":"Spokes", dot:"--left", pos:()=>v3(sideX(-1),-1.45,0.2), show:()=>S.mode!=="free"},
+  {text:()=>S.gear?"Side gear":"Spokes", dot:"--right", pos:()=>v3(sideX(1),-1.45,0.2), show:()=>S.mode!=="free" && !S.ring},
+  {text:"Support", dot:"--brass", pos:()=>supportMarker.getWorldPosition(new THREE.Vector3()), show:()=>S.mode!=="free"},
+  {text:()=>S.mode==="locked"?"Crossbar (bolted)":S.gear?"Pinion":"Crossbar on pivot", pos:()=>barMarker.getWorldPosition(new THREE.Vector3()), show:()=>S.mode!=="free"},
+  {text:"Ring gear", pos:()=>v3(1.4,2.05,0), show:()=>S.mode!=="free"&&S.ring},
+  {text:"Drive pinion", pos:()=>drvG.position.clone().add(v3(0.2,0.75,-1.6)), show:()=>S.mode!=="free"&&S.ring},
+  {text:"Driveshaft from engine", pos:()=>drvG.position.clone().add(v3(0,0.45,-4.2)), show:()=>S.mode!=="free"&&S.ring},
+  {text:"Car floor", pos:()=>v3(-2.6,floor.position.y+0.12,-6), show:()=>S.mode!=="free"&&S.ring}
+];
+LABELS.forEach(l=>{
+  const d=document.createElement("div"); d.className="tag";
+  if(l.dot){ const i=document.createElement("i"); i.style.background=`var(${l.dot})`; d.appendChild(i); }
+  const t=document.createElement("span"); d.appendChild(t); l.el=d; l.span=t; labelsEl.appendChild(d);
+});
+function drawLabels(w,h){
+  LABELS.forEach(l=>{
+    if(!(S.labels && l.show())){ l.el.hidden=true; return; }
+    const p=l.pos().project(camera);
+    if(p.z>1){ l.el.hidden=true; return; }
+    l.el.hidden=false;
+    l.span.textContent = typeof l.text==="function" ? l.text() : l.text;
+    l.el.style.left=((p.x+1)/2*w)+"px"; l.el.style.top=((1-p.y)/2*h-4)+"px";
+  });
+}
+
+/* ---------- tap a wheel to hold it ---------- */
+const ray=new THREE.Raycaster(), ptr=new THREE.Vector2(); let down=null;
+renderer.domElement.addEventListener("pointerdown", e=>{ down={x:e.clientX,y:e.clientY}; });
+renderer.domElement.addEventListener("pointerup", e=>{
+  if(!down || Math.hypot(e.clientX-down.x,e.clientY-down.y)>6){ down=null; return; }
+  down=null;
+  const r=renderer.domElement.getBoundingClientRect();
+  ptr.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+  ray.setFromCamera(ptr,camera);
+  const hit=ray.intersectObjects([wheel[-1],wheel[1]],true)[0];
+  if(hit){ if(hit.object.userData.side<0) S.holdL=!S.holdL; else S.holdR=!S.holdR; syncUI(); }
+});
+
+/* ---------- speed trace ---------- */
+const trace=$("trace"), tctx=trace.getContext("2d"), HIST=260, hist=[];
+const col={L:tok("--left"),R:tok("--right"),C:tok("--brass"),line:tok("--line"),muted:tok("--muted"),fg:tok("--fg"),bad:tok("--bad"),panel:tok("--panel2"),mono:tok("--mono")};
+function fit(cv){ const dpr=Math.min(2,window.devicePixelRatio||1), w=cv.clientWidth, h=cv.clientHeight;
+  if(cv.width!==Math.round(w*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); }
+  const ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h); return [ctx,w,h]; }
+function drawTrace(){
+  const [ctx,w,h]=fit(trace), max=120, pad=6;
+  const Y=v=>h-pad-(Math.max(0,Math.min(max,v))/max)*(h-2*pad);
+  ctx.strokeStyle=col.line; ctx.lineWidth=1;
+  [0,60,120].forEach(v=>{ ctx.beginPath(); ctx.moveTo(0,Y(v)+.5); ctx.lineTo(w,Y(v)+.5); ctx.stroke(); });
+  ctx.fillStyle=col.muted; ctx.font="10px "+col.mono;
+  ctx.fillText("120 rpm",4,Y(120)+10); ctx.fillText("60",4,Y(60)-3);
+  const line=(k,c,dash)=>{ ctx.strokeStyle=c; ctx.lineWidth=2; ctx.setLineDash(dash||[]); ctx.beginPath();
+    let started=false;
+    hist.forEach((p,i)=>{ const v=p[k]; if(!isFinite(v)) return; const x=w-(hist.length-1-i)*(w/(HIST-1)); if(started) ctx.lineTo(x,Y(v)); else { ctx.moveTo(x,Y(v)); started=true; } });
+    ctx.stroke(); ctx.setLineDash([]); };
+  line("c",col.C,[4,4]); line("l",col.L); line("r",col.R);
+}
+
+/* ---------- close-up of the mesh ---------- */
+const closeCv=$("close");
+function drawClose(){
+  const [ctx,w,h]=fit(closeCv);
+  ctx.fillStyle=col.muted; ctx.font="11px "+col.mono;
+  if(S.mode==="free"){ $("closeCap").textContent="Nothing links the wheels yet, so there is nothing to touch."; return; }
+  if(S.gear && D.GM){
+    const G=D.GM, b=D.meshBases(G,1,0,S.mode==="locked"?0:K.u), Mp=D.meshPolys(G,b), a=G.Ts.r+G.Tp.r;
+    const sc=Math.min(w,h*1.4)/(9*G.m);
+    const map=p=>[w/2+p[1]*sc, h/2-(p[0]-G.Ts.r)*sc];
+    const poly=(P,fill,stroke)=>{ ctx.beginPath(); P.forEach((p,i)=>{ const q=map(p); i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]); }); ctx.closePath(); ctx.fillStyle=fill; ctx.fill(); ctx.strokeStyle=stroke; ctx.lineWidth=1; ctx.stroke(); };
+    ctx.setLineDash([3,4]); ctx.strokeStyle=col.line;
+    [[0,G.Ts.r],[a,G.Tp.r]].forEach(([cx,r])=>{ ctx.beginPath(); for(let t=-0.6;t<=0.6;t+=0.01){ const ang=(cx===0?0:PI)+t; const q=map([cx+r*Math.cos(ang), r*Math.sin(ang)]); t===-0.6?ctx.moveTo(q[0],q[1]):ctx.lineTo(q[0],q[1]); } ctx.stroke(); });
+    ctx.strokeStyle=col.muted;
+    [-1,1].forEach(sg=>{ const L=6*G.m; const p0=map([G.Ts.r-sg*Math.sin(G.al)*L, -Math.cos(G.al)*L]), p1=map([G.Ts.r+sg*Math.sin(G.al)*L, Math.cos(G.al)*L]); ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.stroke(); });
+    ctx.setLineDash([]);
+    Mp.S.forEach(P=>poly(P,"rgba(240,138,108,.55)",col.R));
+    Mp.P.forEach(P=>poly(P,"rgba(238,230,208,.55)",col.fg));
+    K.contacts.filter(c=>c.s>0&&c.i===0&&c.p2).forEach(c=>{ const q=map(c.p2); ctx.beginPath(); ctx.arc(q[0],q[1],4,0,TAU); ctx.fillStyle=col.bad; ctx.fill(); });
+    ctx.fillStyle=col.muted; ctx.fillText("pinion",8,14); ctx.fillText("right side gear",8,h-8);
+    $("closeCap").textContent="Right side gear and top pinion, unrolled at the back of the cone. Red dots are tooth pairs touching. They slide along the dashed lines of action and hand over before the last pair lets go.";
+  } else {
+    const SG=D.spokeGeo(), off=D.pegOff(), sc=Math.min(w/2.5, h/2.3);
+    const map=(x,z)=>[w/2+x*sc, h/2+z*sc];
+    const cap=(a,b,r,c,alpha)=>{ ctx.globalAlpha=alpha; ctx.strokeStyle=c; ctx.lineCap="round"; ctx.lineWidth=Math.max(2,2*r*sc); ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke(); ctx.globalAlpha=1; };
+    [-1,1].forEach(s=>{
+      const rel=(s<0?K.tL:K.tR)-K.c;
+      for(let k=0;k<S.N;k++){
+        const th=rel+off+TAU*k/S.N, cy=Math.cos(th); if(cy<0.05) continue;
+        const sy=Math.sin(th);
+        cap(map(s*SG.XS, C.SP_IN*sy), map(s*SG.XS, SG.RSP*sy), SG.r, s<0?col.L:col.R, 0.25+0.75*cy);
+      }
+    });
+    for(let a=0;a<2*S.bars;a++){
+      const be=K.psi[0]+a*PI/S.bars;
+      cap(map(0,0), map(SG.ARM*Math.cos(be), -SG.ARM*Math.sin(be)), SG.r, col.fg, 0.9);
+    }
+    ctx.beginPath(); const c0=map(0,0); ctx.arc(c0[0],c0[1],4,0,TAU); ctx.fillStyle=col.C; ctx.fill();
+    K.contacts.filter(c=>c.i===0).forEach(c=>{ const q=map(c.pf[0],c.pf[2]); ctx.beginPath(); ctx.arc(q[0],q[1],4.5,0,TAU); ctx.fillStyle=col.bad; ctx.fill(); });
+    ctx.fillStyle=col.muted; ctx.fillText("left spokes",8,14); ctx.textAlign="right"; ctx.fillText("right spokes",w-8,14); ctx.textAlign="left";
+    $("closeCap").textContent="Looking straight down the pivot pin at the top crossbar. Spokes fade as they turn away below the bar. Red dots are live contacts from the solver.";
+  }
+}
+
+/* ---------- UI ---------- */
+const reel=$("reel");
+STEPS.forEach((st,i)=>{ const b=document.createElement("button"); b.innerHTML=`<span class="n">${i+1}</span>${st.btn}`; b.addEventListener("click",()=>goStep(i)); reel.appendChild(b); });
+function goStep(i){
+  S.step=i;
+  Object.assign(S,{low:true},STEPS[i].set,{holdL:false,holdR:false});
+  D.rebuildModels(); D.resetRelative(); hist.length=0;
+  rebuild(); buildRing(); syncUI();
+}
+const rpm=w=>w*60/TAU;
+const fmt=(v,d=1)=>isFinite(v)?v.toFixed(d):"—";
+function syncUI(){
+  const st=STEPS[S.step];
+  [...reel.children].forEach((b,i)=>{ if(i===S.step) b.setAttribute("aria-current","step"); else b.removeAttribute("aria-current"); });
+  $("stepNo").textContent=`Step ${S.step+1} of ${STEPS.length}`;
+  $("stepTitle").textContent=st.t; $("stepText").textContent=st.p;
+  $("prev").disabled=S.step===0; $("next").disabled=S.step===STEPS.length-1;
+  $("drive").value=S.drive; $("driveVal").textContent=S.drive+" rpm";
+  $("driveLbl").textContent=S.mode==="free"?"Rolling speed":"Support speed";
+  $("steer").value=S.steer;
+  $("steerVal").textContent=Math.abs(S.steer)<0.04?"Straight":`${S.steer<0?"Left":"Right"} ${Math.round(Math.abs(S.steer)*100)}%`;
+  $("holdL").setAttribute("aria-pressed",S.holdL); $("holdR").setAttribute("aria-pressed",S.holdR);
+  const linked=S.mode!=="free";
+  $("nVal").textContent=S.N; $("nSlider").value=S.N;
+  $("nLbl").textContent=!linked?"spokes arrive in step 2":S.gear?"teeth per side gear":(S.N===1?"spoke per axle":"spokes per axle");
+  const nMax=S.gear?36:24, nMin=S.gear?8:1; $("nSlider").min=nMin; $("nSlider").max=nMax; $("nSlider").value=S.N;
+  $("minus").disabled=!linked||S.N<=nMin; $("plus").disabled=!linked||S.N>=nMax; $("nSlider").disabled=!linked;
+  [...$("bars").children].forEach(b=>{ b.setAttribute("aria-pressed",+b.dataset.b===S.bars); b.disabled=!linked||S.gear; });
+  $("barsLbl").textContent=S.gear?"Pinion teeth":"Crossbars on the pivot";
+  $("pinVal").textContent=S.gear&&D.GM?D.GM.Np+" teeth":"";
+  const setChk=(id,checked,enabled)=>{ $(id).checked=checked; $(id).disabled=!enabled; $(id+"Wrap").classList.toggle("off",!enabled); };
+  setChk("gear",S.gear,linked&&S.N>=8);
+  setChk("pin2",S.pin2,linked);
+  setChk("ring",S.ring,linked);
+  setChk("low",S.low,linked&&S.ring);
+  $("labelsOn").checked=S.labels; $("marksOn").checked=S.marks;
+}
+function updateReadouts(){
+  $("rL").textContent=fmt(rpm(K.wL)); $("rR").textContent=fmt(rpm(K.wR)); $("rC").textContent=fmt(rpm(K.wC));
+  const avg=(rpm(K.wL)+rpm(K.wR))/2;
+  $("law").textContent = S.mode==="pivot" ? `(left + right) ÷ 2 = ${fmt(avg)} rpm · support ${fmt(rpm(K.wC))} rpm`
+    : S.mode==="locked" ? "Bolted bar: left = right = support, always" : "Free wheels: no link between them or to the engine";
+  /* smoothness */
+  let sm=null, txt="—";
+  if(S.mode==="pivot" && S.gear){ sm=1; txt="100% · exact ratio (involute)"; }
+  else if(S.mode==="pivot"){ if(K.smooth===null) txt="not pivoting"; else { sm=K.smooth; txt=Math.round(sm*100)+"% · measured"; } }
+  else if(S.mode==="locked") txt="no pivoting";
+  $("smoothBar").style.width=(sm===null?0:sm*100)+"%"; $("smoothVal").textContent=txt;
+  /* physics card */
+  const G=D.GM, Dm=D.DM; let c="—", o="—", sw="—", rl="Contact ratio", r="—", rg="—";
+  if(S.mode==="locked"){ c="Bar bolted to both spokes"; o="None (rigid link)"; sw="Not needed"; rl="Tyre scrub"; r=K.slip>0?fmt(rpm(K.slip))+" rpm of sliding":"none"; }
+  else if(S.mode==="pivot" && S.gear && G){
+    c=`Left ${K.cL} · right ${K.cR} tooth pairs`; o="0.00 mm (verified sweep)";
+    sw=G.ok?`Clear at 64 positions`+(G.trims?` after cutting tips to ${G.ha.toFixed(2)} m`:""):"Interference remains";
+    r=G.eps.toFixed(2)+(G.eps<1?" · gaps in the drive":" · always a pair in mesh");
+  } else if(S.mode==="pivot"){
+    c=`Left ${K.cL} · right ${K.cR}`+(S.pin2?" (both bars)":""); o=(K.pen*C.UNIT_MM).toFixed(2)+" mm";
+    sw=`Live solver, ${S.sub*18} passes a frame`; rl="Support speed"; r=Math.round(Math.min(1,K.stallFrac)*100)+"% of motor";
+  }
+  if(S.ring && S.mode!=="free" && Dm){
+    rg=(Dm.ok?"Clear":"Interference")+` · ratio ${C.RING_T}:${C.DRV_T} · contact ${Dm.eps.toFixed(2)}`+(S.low?` · ${Math.round(Dm.e*C.UNIT_MM)} mm offset`:"");
+  }
+  $("fContacts").textContent=c; $("fOverlap").textContent=o; $("fSweep").textContent=sw; $("fRatioL").textContent=rl; $("fRatio").textContent=r; $("fRing").textContent=rg;
+}
+$("prev").onclick=()=>goStep(Math.max(0,S.step-1));
+$("next").onclick=()=>goStep(Math.min(STEPS.length-1,S.step+1));
+$("drive").oninput=e=>{ S.drive=+e.target.value; syncUI(); };
+$("steer").oninput=e=>{ S.steer=+e.target.value; syncUI(); };
+$("holdL").onclick=()=>{ S.holdL=!S.holdL; syncUI(); };
+$("holdR").onclick=()=>{ S.holdR=!S.holdR; syncUI(); };
+function setN(n){
+  n=Math.max(S.gear?8:1, Math.min(S.gear?36:24,n|0));
+  if(n===S.N) return;
+  S.N=n; D.rebuildModels();
+  if(!S.gear) D.resetRelative();
+  rebuild(); syncUI();
+}
+$("minus").onclick=()=>setN(S.N-1);
+$("plus").onclick=()=>setN(S.N+1);
+$("nSlider").oninput=e=>setN(+e.target.value);
+[...$("bars").children].forEach(b=>b.onclick=()=>{ S.bars=+b.dataset.b; D.resetRelative(); rebuild(); syncUI(); });
+$("gear").onchange=e=>{ S.gear=e.target.checked; if(!S.gear && S.N>24) S.N=24; D.rebuildModels(); D.resetRelative(); rebuild(); syncUI(); };
+$("pin2").onchange=e=>{ S.pin2=e.target.checked; if(!S.gear) D.resetRelative(); buildFilmArm(); applyVisibility(); syncUI(); };
+$("ring").onchange=e=>{ S.ring=e.target.checked; applyVisibility(); syncUI(); };
+$("low").onchange=e=>{ S.low=e.target.checked; D.rebuildModels(); buildRing(); syncUI(); };
+$("labelsOn").onchange=e=>{ S.labels=e.target.checked; };
+$("marksOn").onchange=e=>{ S.marks=e.target.checked; };
+
+/* ---------- loop ---------- */
+function resize(){
+  const w=stageEl.clientWidth, h=stageEl.clientHeight;
+  renderer.setSize(w,h,false); renderer.domElement.style.width=w+"px"; renderer.domElement.style.height=h+"px";
+  camera.aspect=w/Math.max(1,h); camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stageEl); resize();
+
+const VIEWS={film:{pos:[0,0.75,8.6],tgt:[0,0.15,0]}, three:{pos:[6.4,4.4,8.4],tgt:[0.3,0,-0.6]}, close:{pos:[2.2,2.0,3.0],tgt:[0,0.4,0]}};
+let tween=null;
+function goView(name){ const v=VIEWS[name]; tween={t:0,p0:camera.position.clone(),q0:controls.target.clone(),p1:new THREE.Vector3(...v.pos),q1:new THREE.Vector3(...v.tgt)};
+  document.querySelectorAll(".views [data-view]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.view===name)); }
+const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+document.querySelectorAll(".views [data-view]").forEach(b=>b.onclick=()=>goView(b.dataset.view));
+$("filmLook").onclick=()=>{ const on=!stageEl.classList.contains("film"); stageEl.classList.toggle("film",on); $("filmLook").setAttribute("aria-pressed",on); };
+(function(){ try{ const c=document.createElement("canvas"); c.width=c.height=160; const x=c.getContext("2d"); const im=x.createImageData(160,160);
+  for(let i=0;i<im.data.length;i+=4){ const v=Math.random()*255; im.data[i]=im.data[i+1]=im.data[i+2]=v; im.data[i+3]=255; }
+  x.putImageData(im,0,0); $("grain").style.backgroundImage=`url(${c.toDataURL()})`; }catch(e){} })();
+const statusEl=$("status"), statusText=$("statusText");
+let last=performance.now(), frame=0;
+function loop(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now;
+  D.step(dt);
+  side[-1].rotation.x=K.tL; side[1].rotation.x=K.tR;
+  carrier.rotation.x=K.c;
+  pinTop.rotation.y=K.psi[0]; pinBot.rotation.y=K.psi[1];
+  if(D.DM) drvSpin.rotation.z=D.drivePsi(D.DM,K.c);
+  const skid = S.mode==="locked" && K.slip>0 ? (S.steer<0?-1:1) : 0, pulse=0.35+0.25*Math.sin(now/120);
+  [-1,1].forEach(s=>{ const m=wheel[s].userData.tire.material; m.emissive.setHex(skid===s?0xff3b2e:0); m.emissiveIntensity=pulse; });
+  showMarks(pools.carrier, S.mode==="free"?[]:K.contacts);
+  showMarks(pools.world, (S.ring&&S.mode!=="free")?K.dContacts:[]);
+  if(tween){ tween.t=Math.min(1,tween.t+(reduced?1:dt/0.7)); const e=tween.t<.5?2*tween.t*tween.t:1-Math.pow(-2*tween.t+2,2)/2;
+    camera.position.lerpVectors(tween.p0,tween.p1,e); controls.target.lerpVectors(tween.q0,tween.q1,e); if(tween.t>=1) tween=null; }
+  controls.update();
+  renderer.render(scene,camera);
+  drawLabels(stageEl.clientWidth, stageEl.clientHeight);
+  hist.push({l:rpm(K.wL), r:rpm(K.wR), c:rpm(K.wC)}); if(hist.length>HIST) hist.shift();
+  if((frame++ & 3)===0){
+    drawTrace(); drawClose(); updateReadouts();
+    if(statusText.textContent!==K.msg) statusText.textContent=K.msg;
+    statusEl.dataset.tone=K.tone;
+  }
+  requestAnimationFrame(loop);
+}
+goStep(0);
+requestAnimationFrame(loop);
+})();
+
+</script>
+
+</body></html>
