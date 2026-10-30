@@ -1,6 +1,44 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Around the Corner</title>
+<title>How a Differential Works</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Interactive 3D differential built from the 1937 Chevrolet film Around the Corner. Add spokes, hold a wheel, steer, and watch spokes become real bevel gears.">
+<meta name="keywords" content="how a differential works, differential gear, Around the Corner 1937, Chevrolet film, Jam Handy, open differential, bevel gears, ring and pinion, hypoid, motor vehicle training, automotive education">
+<meta name="author" content="A motor vehicle lecturer">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://claude.ai/artifact/NbaeW3JYpEYRkSod5MaLSz">
+<meta property="og:type" content="website">
+<meta property="og:title" content="How a Differential Works: interactive 3D model of the 1937 film">
+<meta property="og:description" content="Rebuild the differential from Around the Corner (1937) step by step. Add spokes, hold a wheel, steer round a corner and see real gear contact.">
+<meta property="og:url" content="https://claude.ai/artifact/NbaeW3JYpEYRkSod5MaLSz">
+<meta property="og:site_name" content="Around the Corner">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="How a Differential Works: interactive 3D model">
+<meta name="twitter:description" content="The 1937 Chevrolet film Around the Corner, rebuilt as a 3D model you can steer, hold and take apart.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "How a Differential Works: Around the Corner 3D model",
+  "description": "An interactive 3D differential that follows the 1937 Chevrolet film Around the Corner, from free wheels to a pivoting crossbar, spokes, bevel gears and a low-centre ring and pinion drive.",
+  "url": "https://claude.ai/artifact/NbaeW3JYpEYRkSod5MaLSz",
+  "inLanguage": "en-GB",
+  "learningResourceType": ["Interactive simulation", "Explainer"],
+  "educationalLevel": "Further education, Level 1 and Level 2 motor vehicle",
+  "teaches": ["How a differential lets driven wheels turn at different speeds", "Bevel gear and pinion action", "Ring and pinion final drive", "Hypoid low-centre drive"],
+  "about": {"@type": "Thing", "name": "Differential (mechanical device)", "sameAs": "https://en.wikipedia.org/wiki/Differential_(mechanical_device)"},
+  "isAccessibleForFree": true,
+  "author": {"@type": "Person", "jobTitle": "Motor vehicle lecturer"},
+  "isBasedOn": {
+    "@type": "VideoObject",
+    "name": "Around the Corner (1937)",
+    "description": "Chevrolet educational film explaining how a differential works.",
+    "url": "https://youtu.be/yYAw79386WI",
+    "thumbnailUrl": "https://i.ytimg.com/vi/yYAw79386WI/hqdefault.jpg",
+    "productionCompany": {"@type": "Organization", "name": "Jam Handy Organization"},
+    "sponsor": {"@type": "Organization", "name": "Chevrolet"}
+  }
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Limelight&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -149,6 +187,17 @@ input[type=range]{width:100%;accent-color:var(--brass)}
   input[type=range]{height:28px}
   #close{height:150px}
 }
+.guide{max-width:72ch;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px;display:flex;flex-direction:column;gap:28px;border-top:1px solid var(--line)}
+.guide h2{font-size:clamp(22px,3vw,28px);color:var(--brass)}
+.guide h3{font-family:var(--body);font-size:16px;font-weight:600;margin:0 0 6px}
+.guide p,.guide li{color:color-mix(in srgb,var(--fg) 88%,var(--muted));font-size:15px;line-height:1.65;margin:0}
+.guide section{display:flex;flex-direction:column;gap:10px}
+.guide ol,.guide ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.guide a{color:var(--brass)}
+.guide details{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--panel)}
+.guide summary{cursor:pointer;font-weight:600}
+.guide details p{margin-top:8px}
+.byline{font-size:13px!important;color:var(--muted)!important}
 @media (prefers-reduced-motion:reduce){.meter span{transition:none}}
 </style>
 
@@ -259,6 +308,58 @@ input[type=range]{width:100%;accent-color:var(--brass)}
   </div>
 </div>
 
+<article class="guide" id="guide">
+  <section>
+    <p class="eyebrow">The explainer</p>
+    <h2>How a differential works</h2>
+    <p>When a car turns a corner, the outside driven wheel travels further than the inside one in the same time, so it has to turn faster. If both wheels were locked to one axle, one of them would have to scrub and slide. The differential sits between the two half-shafts and lets each wheel turn at its own speed while the engine still drives both.</p>
+    <p>The model above follows the reasoning of <a href="https://youtu.be/yYAw79386WI" target="_blank" rel="noopener">Around the Corner</a>, the 1937 Chevrolet film made by the Jam Handy Organization. It builds the differential up one idea at a time, and you can steer it, hold a wheel and count the spokes yourself.</p>
+    <p class="byline">Built by a motor vehicle lecturer who has taught with this film for years.</p>
+  </section>
+
+  <section>
+    <h2>The six steps</h2>
+    <ol>
+      <li><b>The corner problem.</b> Free wheels on separate axles roll at different speeds, but neither is driven.</li>
+      <li><b>A spoke and a fixed bar.</b> A support carries a crossbar that pushes a spoke on each axle. Both wheels are driven, but they are locked to the same speed.</li>
+      <li><b>Put the bar on a pivot.</b> The bar can now tilt, so one wheel can run faster than the other. Turned too far, it slips past the spoke and the drive is lost.</li>
+      <li><b>Another bar, more spokes.</b> A second crossbar picks up the next spoke before the last one lets go, so the drive is continuous, though jerky.</li>
+      <li><b>Spokes become gears.</b> Shaped teeth give constant contact. These are the side gears and pinions of a real differential.</li>
+      <li><b>Ring gear and low-centre drive.</b> A ring gear on the differential case, turned by a pinion on the driveshaft, brings in the engine's power. Moving the pinion below the centre line (a hypoid offset) lowers the driveshaft and the floor of the car.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>The rule every open differential follows</h2>
+    <p>The average speed of the two wheels always equals the speed of the differential case. If the case turns at 24 rpm and one wheel slows to 18 rpm, the other speeds up to 30 rpm. Hold one wheel still and the other turns at twice the case speed, 48 rpm. The readouts in the model show this live.</p>
+    <p>The same gearing splits torque equally between the two wheels. That is why a car with an open differential can get stuck with one wheel spinning on ice: the wheel with the least grip sets the torque both wheels get.</p>
+  </section>
+
+  <section>
+    <h2>What the model checks</h2>
+    <p>The spokes and crossbars are solid parts in a contact solver, so the wheels only move when a bar actually pushes a spoke. The gears are involute bevel gears cut on cones that meet at the centre, and every tooth count is swept for collisions before it is shown. The physics panel shows how many tooth pairs are touching and the contact ratio, so you can watch the load hand over from one pair to the next.</p>
+  </section>
+
+  <section>
+    <h2>For teachers</h2>
+    <ul>
+      <li>Play the film first, then rebuild each stage here and let learners predict what happens before they hold a wheel or steer.</li>
+      <li>Use the 1937 film look and the film-angle camera to line the model up against the original footage.</li>
+      <li>Set learners the speed rule as a problem: give the case speed and one wheel speed, ask for the other, then check it on the model.</li>
+      <li>Use step 4 and the close-up view to discuss why straight bars are jerky and why gear teeth are shaped.</li>
+      <li>It suits Level 1 and Level 2 motor vehicle courses covering transmission and final drive, and works on classroom screens and phones.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Questions</h2>
+    <details><summary>What does a differential do?</summary><p>It lets the two driven wheels on an axle turn at different speeds, which they must do on every corner, while the engine keeps driving both of them.</p></details>
+    <details><summary>Why does one wheel spin when the car is stuck?</summary><p>An open differential always gives both wheels the same torque. If one wheel is on ice it can only take a little torque, so the other wheel gets the same little amount and the car doesn't move.</p></details>
+    <details><summary>Why does the held wheel make the other turn twice as fast?</summary><p>The pinions roll round the stopped side gear and carry the other side gear round with them, adding their own spin to the case speed. The average of the two wheels still equals the case speed.</p></details>
+    <details><summary>What is low-centre or hypoid drive?</summary><p>The drive pinion meets the ring gear below its centre instead of on the centre line. That lowers the driveshaft so the car floor can be lower, and the sliding tooth action runs quieter.</p></details>
+    <details><summary>Who made Around the Corner?</summary><p>The Jam Handy Organization produced it for Chevrolet in 1937. It is still widely used to teach how a differential works. <a href="https://youtu.be/yYAw79386WI" target="_blank" rel="noopener">Watch it on YouTube</a>.</p></details>
+  </section>
+</article>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
