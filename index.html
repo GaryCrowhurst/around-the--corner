@@ -26,27 +26,87 @@ body.tour-mode #stage canvas{pointer-events:none}
 #tourPlay{background:#d9a441;border-color:#d9a441;color:#101518;min-width:110px}
 #tourSeek{flex:1;min-width:30px;max-width:none;accent-color:#d9a441;cursor:pointer;height:30px}
 #tourTime{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:12px;color:#b7c8c9;min-width:98px;text-align:right}
-#tourExplore{position:absolute;top:max(19px,env(safe-area-inset-top,0px));right:clamp(14px,3.4vw,54px);transform:translateY(55px);pointer-events:auto;cursor:pointer;border:1px solid #52656b;background:#0c181dc9;color:#e5e9e5;border-radius:99px;padding:7px 12px;font:600 12px system-ui,-apple-system,Segoe UI,sans-serif}
 #tourNotice{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#f5eedc;font-size:15px;text-align:center;max-width:min(85vw,540px);background:#0b181eea;border:1px solid #354b52;padding:18px 22px;border-radius:12px;pointer-events:none}
 #tourNotice[hidden]{display:none}
 #backToTour{position:fixed;top:12px;right:12px;z-index:999;border:1px solid #d9a441;background:#111f25;color:#f7e7bc;border-radius:99px;padding:10px 14px;font:600 13px system-ui,sans-serif;cursor:pointer}
-@media(max-width:740px){.tour-controls{gap:7px;padding:8px;border-radius:12px}.tour-controls button{font-size:12px;padding:7px 9px;min-height:42px}#tourPlay{min-width:80px}#tourTime{font-size:11px;min-width:75px}#tourFullscreen{font-size:0!important;min-width:40px}#tourFullscreen::first-letter{font-size:16px}#tourRestart{font-size:0!important;min-width:40px}#tourRestart::first-letter{font-size:16px}#tourTitle{max-width:80%}#tourStep{display:none}#tourExplore{transform:none;top:68px;font-size:11px}}
-@media(max-width:430px){.tour-head{top:12px}#tourTitle{font-size:20px}#tourCaption{font-size:15px}.tour-footer{gap:10px}#tourTime{min-width:65px}#tourPlay{min-width:70px}}
+
+/* Published lesson links and controls are accessible on phones and desktop. */
+.tour-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:18px;row-gap:12px}
+.tour-heading{min-width:0}
+.tour-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;pointer-events:auto;max-width:440px}
+.tour-actions a,.tour-actions button{position:static;transform:none;display:inline-flex;justify-content:center;align-items:center;gap:6px;min-height:42px;padding:8px 13px;max-width:100%;border:1px solid #455b60;border-radius:999px;background:#12262ce8;color:#f2e9d8;text-decoration:none;font:650 12px/1.2 system-ui,-apple-system,Segoe UI,sans-serif;white-space:normal;text-align:center;cursor:pointer}
+.tour-actions a{background:#d9a441;color:#13191b;border-color:#d9a441}
+.tour-actions a:hover,.tour-actions a:focus-visible,.tour-actions button:hover,.tour-actions button:focus-visible{outline:2px solid #f5dda6;outline-offset:2px}
+#tourStep{margin:0;align-self:center}
+.tour-footer{gap:12px}
+.tour-controls{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto auto;align-items:center;gap:12px}
+.tour-controls button{min-width:0}
+#tourPlay{min-width:110px}
+#tourSeek{width:100%;min-width:0;max-width:none}
+#tourTime{min-width:92px;text-align:center}
+.header-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
+header .film-link{margin-left:0}
+.header-links .published-link{background:#d9a441;color:#0e1316;border-color:#d9a441}
+.header-links .published-link:hover{background:#f2bf5e}
+@media (max-width:900px){
+  .tour-head{grid-template-columns:minmax(0,1fr);row-gap:10px}
+  .tour-actions{justify-content:flex-start;max-width:100%}
+  #tourTitle{font-size:clamp(19px,3.6vw,29px);margin-top:5px}
+  .tour-footer{padding-left:12px;padding-right:12px}
+}
+@media (max-width:680px){
+  .tour-head{left:12px;right:12px;top:max(12px,env(safe-area-inset-top,0px))}
+  .tour-actions{flex-wrap:wrap;gap:6px}
+  .tour-actions a,.tour-actions button{font-size:11px;min-height:38px;padding:7px 11px}
+  #tourStep{font-size:10px;padding:5px 8px}
+  .tour-footer{gap:8px;padding-bottom:max(10px,env(safe-area-inset-bottom,0px))}
+  #tourCaption{font-size:clamp(13px,3.4vw,17px);line-height:1.3;padding:0 4px}
+  .tour-controls{grid-template-columns:minmax(76px,1fr) 40px 40px auto;grid-template-rows:auto auto;gap:7px;padding:8px;border-radius:12px}
+  #tourPlay{grid-column:1;grid-row:1;width:100%;min-width:0}
+  #tourRestart{grid-column:2;grid-row:1;width:40px;padding:5px;font-size:0!important}
+  #tourRestart::before{content:'↺';font-size:22px}
+  #tourFullscreen{grid-column:3;grid-row:1;width:40px;padding:5px;font-size:0!important}
+  #tourFullscreen::before{content:'⛶';font-size:21px}
+  #tourTime{grid-column:4;grid-row:1;min-width:64px;padding-inline:1px;font-size:11px;text-align:right}
+  #tourSeek{grid-column:1/-1;grid-row:2;width:100%;min-width:0;order:unset}
+  .tour-controls button{min-height:40px}
+  .header-links{width:100%;justify-content:flex-start;margin-left:0}
+  .header-links a{flex:0 1 auto}
+}
+@media (max-width:380px){
+  .tour-meta{font-size:9px;letter-spacing:.08em}
+  #tourTitle{font-size:18px;line-height:1.16}
+  .tour-actions a,.tour-actions button{font-size:10px;padding:6px 9px}
+  .tour-controls{gap:5px;padding:6px}
+  #tourTime{font-size:10px;min-width:56px}
+}
+@media (max-height:480px) and (orientation:landscape){
+  .tour-head{top:5px;row-gap:4px}
+  .tour-meta{font-size:9px}
+  #tourTitle{font-size:17px;margin-top:2px}
+  .tour-actions a,.tour-actions button{min-height:30px;padding:4px 8px}
+  .tour-footer{padding-bottom:5px;gap:4px}
+  #tourCaption{font-size:13px;line-height:1.2}
+  .tour-controls{padding:5px 8px;gap:5px}
+  .tour-controls button{min-height:32px}
+}
+@media (prefers-reduced-motion:reduce){.tour-controls *{scroll-behavior:auto}}
 </style>
 <script>window.__aroundCornerTourPaused=true;</script>
 </head><body class="tour-mode">
-<title>How a Differential Works</title>
+<title>How a Differential Works — Interactive 3D Simulator &amp; Video</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Interactive 3D differential built from the 1937 Chevrolet film Around the Corner. Add spokes, hold a wheel, steer, and watch spokes become real bevel gears.">
 <meta name="keywords" content="how a differential works, differential gear, Around the Corner 1937, Chevrolet film, Jam Handy, open differential, bevel gears, ring and pinion, hypoid, motor vehicle training, automotive education">
 <meta name="author" content="A motor vehicle lecturer">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://claude.ai/artifact/NbaeW3JYpEYRkSod5MaLSz">
+<link rel="canonical" href="https://garycrowhurst.github.io/around-the--corner/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="How a Differential Works: interactive 3D model of the 1937 film">
 <meta property="og:description" content="Rebuild the differential from Around the Corner (1937) step by step. Add spokes, hold a wheel, steer round a corner and see real gear contact.">
-<meta property="og:url" content="https://claude.ai/artifact/NbaeW3JYpEYRkSod5MaLSz">
+<meta property="og:url" content="https://garycrowhurst.github.io/around-the--corner/">
 <meta property="og:site_name" content="Around the Corner">
+<meta property="og:video" content="https://www.youtube.com/watch?v=iwMyDzyk91o">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="How a Differential Works: interactive 3D model">
 <meta name="twitter:description" content="The 1937 Chevrolet film Around the Corner, rebuilt as a 3D model you can steer, hold and take apart.">
@@ -56,7 +116,7 @@ body.tour-mode #stage canvas{pointer-events:none}
   "@type": "LearningResource",
   "name": "How a Differential Works: Around the Corner 3D model",
   "description": "An interactive 3D differential that follows the 1937 Chevrolet film Around the Corner, from free wheels to a pivoting crossbar, spokes, bevel gears and a low-centre ring and pinion drive.",
-  "url": "https://claude.ai/artifact/NbaeW3JYpEYRkSod5MaLSz",
+  "url": "https://garycrowhurst.github.io/around-the--corner/",
   "inLanguage": "en-GB",
   "learningResourceType": ["Interactive simulation", "Explainer"],
   "educationalLevel": "Further education, Level 1 and Level 2 motor vehicle",
@@ -241,7 +301,10 @@ input[type=range]{width:100%;accent-color:var(--brass)}
   <header>
     <h1>Around the Corner</h1>
     <p>Build a differential step by step, after the 1937 Chevrolet film.</p>
-    <a class="film-link" href="https://youtu.be/yYAw79386WI" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Watch the 1937 film</a>
+    <div class="header-links">
+      <a class="film-link published-link" href="https://youtu.be/iwMyDzyk91o" target="_blank" rel="noopener noreferrer" aria-label="Watch our narrated 3D differential explanation on YouTube">▶ Watch our 3D video</a>
+      <a class="film-link" href="https://youtu.be/yYAw79386WI" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>1937 original film</a>
+    </div>
   </header>
   <nav class="reel" id="reel" aria-label="Steps"></nav>
 
@@ -349,6 +412,7 @@ input[type=range]{width:100%;accent-color:var(--brass)}
     <p class="eyebrow">The explainer</p>
     <h2>How a differential works</h2>
     <p>When a car turns a corner, the outside driven wheel travels further than the inside one in the same time, so it has to turn faster. If both wheels were locked to one axle, one of them would have to scrub and slide. The differential sits between the two half-shafts and lets each wheel turn at its own speed while the engine still drives both.</p>
+    <p><a href="https://youtu.be/iwMyDzyk91o" target="_blank" rel="noopener noreferrer">Watch our narrated 3D differential video on YouTube</a>, or explore the interactive model directly on this page.</p>
     <p>The model above follows the reasoning of <a href="https://youtu.be/yYAw79386WI" target="_blank" rel="noopener">Around the Corner</a>, the 1937 Chevrolet film made by the Jam Handy Organization. It builds the differential up one idea at a time, and you can steer it, hold a wheel and count the spokes yourself.</p>
     <p class="byline">Built by a motor vehicle lecturer who has taught with this film for years.</p>
   </section>
@@ -805,7 +869,7 @@ S.sub = small ? 4 : 6;
 
 /* ---------- Three.js scene ---------- */
 const stageEl = $("stage");
-const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(small?1.5:2, window.devicePixelRatio||1));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -1288,7 +1352,8 @@ const statusEl=$("status"), statusText=$("statusText");
 let last=performance.now(), frame=0;
 function loop(now){
   const dt=Math.min(0.05,(now-last)/1000); last=now;
-  if (!window.__aroundCornerTourPaused) D.step(dt);
+  const animating=!window.__aroundCornerTourPaused;
+  if(animating) D.step(dt);
   side[-1].rotation.x=K.tL; side[1].rotation.x=K.tR;
   carrier.rotation.x=K.c;
   pinTop.rotation.y=K.psi[0]; pinBot.rotation.y=K.psi[1];
@@ -1297,7 +1362,7 @@ function loop(now){
   [-1,1].forEach(s=>{ const m=wheel[s].userData.tire.material; m.emissive.setHex(skid===s?0xff3b2e:0); m.emissiveIntensity=pulse; });
   showMarks(pools.carrier, S.mode==="free"?[]:K.contacts);
   showMarks(pools.world, (S.ring&&S.mode!=="free")?K.dContacts:[]);
-  if(tween && !window.__aroundCornerTourPaused){ tween.t=Math.min(1,tween.t+(reduced?1:dt/0.7)); const e=tween.t<.5?2*tween.t*tween.t:1-Math.pow(-2*tween.t+2,2)/2;
+  if(tween && animating){ tween.t=Math.min(1,tween.t+(reduced?1:dt/0.7)); const e=tween.t<.5?2*tween.t*tween.t:1-Math.pow(-2*tween.t+2,2)/2;
     camera.position.lerpVectors(tween.p0,tween.p1,e); controls.target.lerpVectors(tween.q0,tween.q1,e); if(tween.t>=1) tween=null; }
   controls.update();
   renderer.render(scene,camera);
@@ -1317,7 +1382,8 @@ window.__aroundCornerModel = Object.freeze({
   setDrive(v){S.drive=Math.max(0,Math.min(60,v));syncUI();},
   setHold(left,right){S.holdL=!!left;S.holdR=!!right;syncUI();},
   setCameraLocked(locked){controls.enabled=!locked;},
-  readSpeeds(){return {left:$("rL").textContent,right:$("rR").textContent,case:$("rC").textContent};}
+  readSpeeds(){return {left:$("rL").textContent,right:$("rR").textContent,case:$("rC").textContent};},
+  readMotion(){return {left:K.tL,right:K.tR,case:K.c,step:S.step};}
 });
 goStep(0);
 requestAnimationFrame(loop);
@@ -1327,8 +1393,14 @@ requestAnimationFrame(loop);
 
 
 <div class="tour-ui" id="tourUi" role="region" aria-label="Differential narrated lesson">
-  <div class="tour-head"><div><div class="tour-meta">Around the Corner · Original 3D model</div><h1 id="tourTitle">Why does a car need a differential?</h1></div><div id="tourStep">INTRODUCTION</div></div>
-  <button type="button" id="tourExplore" aria-label="Leave the narrated tour to explore the interactive model">Explore 3D model ↗</button>
+  <div class="tour-head">
+    <div class="tour-heading"><div class="tour-meta">Around the Corner · Original 3D model</div><h1 id="tourTitle">Why does a car need a differential?</h1></div>
+    <div class="tour-actions">
+      <span id="tourStep">INTRODUCTION</span>
+      <button type="button" id="tourExplore" aria-label="Leave the narrated tour to explore the interactive model">Explore 3D model ↗</button>
+      <a href="https://youtu.be/iwMyDzyk91o" target="_blank" rel="noopener noreferrer" aria-label="Watch the published 3D differential video on YouTube">▶ Watch on YouTube</a>
+    </div>
+  </div>
   <div id="tourNotice" role="status">Loading original 3D model…</div>
   <div class="tour-footer">
     <p id="tourCaption" aria-live="off">Press Play to start the narrated tour.</p>
@@ -1342,7 +1414,6 @@ requestAnimationFrame(loop);
   </div>
 </div>
 <button type="button" id="backToTour" hidden>◀ Narrated tour</button>
-
 <script id="narrated-tour-player">
 (() => {
  'use strict';
@@ -1358,6 +1429,7 @@ requestAnimationFrame(loop);
  const model=window.__aroundCornerModel;
  const expectedDuration=145.305;
  let currentScene=-1,lastAction=-1,frameHandle=0,modelReady=!!model,exploring=false;
+
  function fmt(t){t=Number.isFinite(t)?Math.max(0,t):0;return Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');}
  function cueAt(t){let lo=0,hi=captions.length-1;while(lo<=hi){const mid=(lo+hi)>>1;const c=captions[mid];if(t<c.start)hi=mid-1;else if(t>c.end)lo=mid+1;else return c.text;}return '';}
  function chooseScene(t){let i=0;while(i+1<scenes.length&&scenes[i+1].start<=t)i++;return i;}
@@ -1383,7 +1455,7 @@ requestAnimationFrame(loop);
      if(a.at>=sc.start)applyAction(a);
    }
  }
- function display(t=audio.currentTime){
+function display(t=audio.currentTime){
    const duration=Number.isFinite(audio.duration)?audio.duration:expectedDuration;
    seek.max=String(duration);seek.value=String(Math.min(duration,t));
    time.textContent=fmt(t)+' / '+fmt(duration);
@@ -1411,15 +1483,21 @@ requestAnimationFrame(loop);
      if(!document.fullscreenElement&&document.documentElement.requestFullscreen){
        document.documentElement.requestFullscreen().catch(()=>{});
      }
-     await audio.play();updatePlay();cancelAnimationFrame(frameHandle);frameHandle=requestAnimationFrame(tick);
+     await audio.play();updatePlay(); // The audio 'play' handler starts the tour clock.
    }catch(e){pause();notice.hidden=false;notice.textContent='Audio could not start. Click Play again or check browser audio permissions.';}
  }
  play.addEventListener('click',()=>{if(audio.paused)start();else pause();});
  restart.addEventListener('click',()=>{pause();audio.currentTime=0;sync(0,true);display(0);});
  seek.addEventListener('input',()=>{if(!modelReady)return;audio.currentTime=Number(seek.value);sync(audio.currentTime,true);display();});
  audio.addEventListener('ended',()=>{cancelAnimationFrame(frameHandle);frameHandle=0;updatePlay();display();});
- audio.addEventListener('pause',()=>{updatePlay();display();});
- audio.addEventListener('play',()=>{notice.hidden=true;updatePlay();});
+ audio.addEventListener('pause',()=>{
+   updatePlay();display();
+   cancelAnimationFrame(frameHandle);frameHandle=0;
+ });
+ audio.addEventListener('play',()=>{
+   notice.hidden=true;updatePlay();
+   if(!exploring){cancelAnimationFrame(frameHandle);frameHandle=requestAnimationFrame(tick);}
+ });
  audio.addEventListener('loadedmetadata',()=>display());
  audio.addEventListener('error',()=>{notice.hidden=false;notice.textContent='The narration could not be decoded by this browser.';play.disabled=true;});
  async function toggleFullscreen(){
